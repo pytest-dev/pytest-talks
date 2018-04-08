@@ -1,0 +1,574 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<title>Introduction to py.test</title>
+<meta name="author" content="(Floris Bruynooghe)"/>
+
+<link rel="stylesheet" href="./reveal.js/css/reveal.min.css"/>
+<link rel="stylesheet" href="./reveal.js/css/theme/solarized.css" id="theme"/>
+
+<!-- If the query includes 'print-pdf', include the PDF print sheet -->
+<script>
+    if( window.location.search.match( /print-pdf/gi ) ) {
+        var link = document.createElement( 'link' );
+        link.rel = 'stylesheet';
+        link.type = 'text/css';
+        link.href = './reveal.js/css/print/pdf.css';
+        document.getElementsByTagName( 'head' )[0].appendChild( link );
+    }
+</script>
+</head>
+<body>
+<div class="reveal">
+<div class="slides">
+<section>
+<h1>Introduction to py.test</h1>
+<h2>Floris Bruynooghe</h2>
+<h2><a href="mailto:flub@devork.be">flub@devork.be</a></h2>
+<h2></h2></section>
+
+<section>
+<section id="sec-1" >
+
+<h2>py.test</h2>
+<img src="./pytest1.png" alt="pytest1.png" />
+
+<p>
+pytest.org
+</p>
+
+<p>
+github.com/pytest-dev/pytest
+</p>
+
+<aside class="notes">
+<ul class="org-ul">
+<li>py.test vs pytest
+</li>
+<li>Do not get confused with pylint/logilab-common!
+</li>
+<li>Been around very long
+<ul class="org-ul">
+<li>transformed quite a bit
+</li>
+</ul>
+</li>
+</ul>
+</aside>
+</section>
+
+</section>
+<section>
+<section id="sec-2" >
+
+<h2>Introduction</h2>
+<ul class="org-ul">
+<li>no-boilerplate test
+</li>
+<li>discovery
+</li>
+<li>plain assert
+</li>
+<li>nice exception formatting
+</li>
+<li>pdb integration
+</li>
+<li>output capture
+</li>
+<li>parametrisation
+</li>
+<li>markers
+</li>
+<li>xdist
+</li>
+<li>plugins
+</li>
+<li>runs unittest &amp; nose tests too
+</li>
+<li>&#x2026;
+</li>
+</ul>
+</section>
+
+</section>
+<section>
+<section id="sec-3" >
+
+<h2>Simple Tests</h2>
+<div class="org-src-container">
+
+<pre  class="src src-python"><span style="color: #859900; font-weight: bold;">def</span> <span style="color: #268bd2;">test_int_casting</span>():
+<span style="background-color: #eee8d5;"> </span>   <span style="color: #859900; font-weight: bold;">assert</span> <span style="color: #657b83; font-weight: bold;">int</span>(<span style="color: #2aa198;">'5'</span>) == 5
+
+
+<span style="color: #859900; font-weight: bold;">class</span> <span style="color: #b58900;">TestFloats</span>:
+
+<span style="background-color: #eee8d5;"> </span>   <span style="color: #859900; font-weight: bold;">def</span> <span style="color: #268bd2;">test_dot</span>(<span style="color: #859900; font-weight: bold;">self</span>):
+<span style="background-color: #eee8d5;"> </span>   <span style="background-color: #eee8d5;"> </span>   <span style="color: #859900; font-weight: bold;">assert</span> <span style="color: #657b83; font-weight: bold;">float</span>(<span style="color: #2aa198;">'3.3'</span>) == 3.3
+
+<span style="background-color: #eee8d5;"> </span>   <span style="color: #859900; font-weight: bold;">def</span> <span style="color: #268bd2;">test_e</span>(<span style="color: #859900; font-weight: bold;">self</span>):
+<span style="background-color: #eee8d5;"> </span>   <span style="background-color: #eee8d5;"> </span>   <span style="color: #859900; font-weight: bold;">assert</span> <span style="color: #657b83; font-weight: bold;">float</span>(<span style="color: #2aa198;">'3.1e3'</span>) == 3100.0
+</pre>
+</div>
+
+<pre class="example">
+$ py.test
+========================= test session starts =========================
+platform linux -- Python 3.4.3, pytest-2.8.0, py-1.4.30, pluggy-0.3.1
+rootdir: /tmp/sandbox, inifile:
+collected 3 items
+
+test.py ...
+
+====================== 3 passed in 0.01 seconds =======================
+</pre>
+
+<aside class="notes">
+<ul class="org-ul">
+<li>classes mostly for structures
+</li>
+<li>discovery
+</li>
+</ul>
+</aside>
+</section>
+
+</section>
+<section>
+<section id="sec-4" >
+
+<h2>Detailed Failure Reports</h2>
+<div class="org-src-container">
+
+<pre  class="src src-python"><span style="color: #859900; font-weight: bold;">def</span> <span style="color: #268bd2;">test_wrong</span>():
+<span style="background-color: #eee8d5;"> </span>   <span style="color: #859900; font-weight: bold;">assert</span> <span style="color: #2aa198;">'Some test about spam'</span> == <span style="color: #2aa198;">'Some blurb about ham'</span>
+</pre>
+</div>
+
+<pre class="example">
+$ py.test -q
+========================= test session starts =========================
+platform linux -- Python 3.4.3, pytest-2.8.0, py-1.4.30, pluggy-0.3.1
+rootdir: /tmp/sandbox, inifile:
+collected 1 items
+
+test_ex.py F
+
+============================== FAILURES ===============================
+_____________________________ test_wrong ______________________________
+
+    def test_wrong():
+&gt;       assert 'Some text about spam' == 'Some text about ham'
+E       assert 'Some text about spam' == 'Some text about ham'
+E         - Some text about spam
+E         ?                 ^^
+E         + Some text about ham
+E         ?                 ^
+
+test.py:2: AssertionError
+====================== 1 failed in 0.01 seconds =======================
+</pre>
+
+<aside class="notes">
+<ul class="org-ul">
+<li>can be customised
+</li>
+</ul>
+</aside>
+</section>
+
+</section>
+<section>
+<section id="sec-5" >
+
+<h2>Assertions</h2>
+<div class="org-src-container">
+
+<pre  class="src src-python"><span style="color: #859900; font-weight: bold;">def</span> <span style="color: #268bd2;">test_assertions</span>():
+<span style="background-color: #eee8d5;"> </span>   <span style="color: #268bd2;">x</span> = <span style="color: #268bd2;">y</span> = 0
+<span style="background-color: #eee8d5;"> </span>   <span style="color: #859900; font-weight: bold;">assert</span> x
+<span style="background-color: #eee8d5;"> </span>   <span style="color: #859900; font-weight: bold;">assert</span> x == 1
+<span style="background-color: #eee8d5;"> </span>   <span style="color: #859900; font-weight: bold;">assert</span> x != 2
+<span style="background-color: #eee8d5;"> </span>   <span style="color: #859900; font-weight: bold;">assert</span> <span style="color: #859900; font-weight: bold;">not</span> x
+<span style="background-color: #eee8d5;"> </span>   <span style="color: #859900; font-weight: bold;">assert</span> 3 &lt; x &lt; 5 <span style="color: #859900; font-weight: bold;">and</span> y &lt; 5
+<span style="background-color: #eee8d5;"> </span>   <span style="color: #268bd2;">s</span> = <span style="color: #2aa198;">'the quick fox ...'</span>
+<span style="background-color: #eee8d5;"> </span>   <span style="color: #859900; font-weight: bold;">assert</span> <span style="color: #2aa198;">'fox'</span> <span style="color: #859900; font-weight: bold;">in</span> s
+</pre>
+</div>
+
+<aside class="notes">
+<ul class="org-ul">
+<li>native assert for everything
+</li>
+</ul>
+</aside>
+</section>
+
+</section>
+<section>
+<section id="sec-6" >
+
+<h2>Expected Exceptions</h2>
+<div class="org-src-container">
+
+<pre  class="src src-python"><span style="color: #859900; font-weight: bold;">import</span> pytest
+
+<span style="color: #859900; font-weight: bold;">def</span> <span style="color: #268bd2;">divide</span>(x, y):
+<span style="background-color: #eee8d5;"> </span>   <span style="color: #859900; font-weight: bold;">return</span> x / y
+
+<span style="color: #859900; font-weight: bold;">def</span> <span style="color: #268bd2;">test_raises</span>():
+<span style="background-color: #eee8d5;"> </span>   <span style="color: #859900; font-weight: bold;">with</span> pytest.raises(<span style="color: #b58900;">ZeroDivisionError</span>):
+<span style="background-color: #eee8d5;"> </span>   <span style="background-color: #eee8d5;"> </span>   divide(3, 0)
+
+<span style="color: #859900; font-weight: bold;">def</span> <span style="color: #268bd2;">test_exc_args</span>():
+<span style="background-color: #eee8d5;"> </span>   <span style="color: #859900; font-weight: bold;">with</span> pytest.raises(<span style="color: #b58900;">Exception</span>) <span style="color: #859900; font-weight: bold;">as</span> exc:
+<span style="background-color: #eee8d5;"> </span>   <span style="background-color: #eee8d5;"> </span>   <span style="color: #859900; font-weight: bold;">raise</span> <span style="color: #b58900;">Exception</span>(42, <span style="color: #2aa198;">'msg'</span>)
+<span style="background-color: #eee8d5;"> </span>   <span style="color: #859900; font-weight: bold;">assert</span> <span style="color: #268bd2;">exc.value.args</span> = (42, <span style="color: #2aa198;">'msg'</span>)
+<span style="background-color: #eee8d5;"> </span>   <span style="color: #859900; font-weight: bold;">assert</span> exc.<span style="color: #657b83; font-weight: bold;">type</span> <span style="color: #859900; font-weight: bold;">is</span> <span style="color: #b58900;">Exception</span>
+<span style="background-color: #eee8d5;"> </span>   <span style="color: #859900; font-weight: bold;">assert</span> exc.tb
+</pre>
+</div>
+</section>
+
+</section>
+<section>
+<section id="sec-7" >
+
+<h2>Output Capture</h2>
+<div class="org-src-container">
+
+<pre  class="src src-python"><span style="color: #859900; font-weight: bold;">def</span> <span style="color: #268bd2;">func</span>(a):
+<span style="background-color: #eee8d5;"> </span>   <span style="color: #859900; font-weight: bold;">print</span>(<span style="color: #2aa198;">'input was: {!r}'</span>.<span style="color: #657b83; font-weight: bold;">format</span>(a))
+<span style="background-color: #eee8d5;"> </span>   <span style="color: #859900; font-weight: bold;">return</span> a + 42
+
+<span style="color: #859900; font-weight: bold;">def</span> <span style="color: #268bd2;">test_func</span>():
+<span style="background-color: #eee8d5;"> </span>   <span style="color: #859900; font-weight: bold;">assert</span> func(5) &lt; 5
+</pre>
+</div>
+
+<pre class="example">
+$ py.test
+========================= test session starts =========================
+platform linux -- Python 3.4.3, pytest-2.8.0, py-1.4.30, pluggy-0.3.1
+rootdir: /tmp/sandbox, inifile:
+collected 1 items
+
+test_ex.py F
+
+============================== FAILURES ===============================
+______________________________ test_func ______________________________
+
+    def test_func():
+&gt;       assert func(5) &lt; 5
+E       assert 47 &lt; 5
+E        +  where 47 = func(5)
+
+test_ex.py:6: AssertionError
+-------------------------- Captured stdout call -----------------------
+input was: 5
+======================== 1 failed in 0.05 seconds =====================
+</pre>
+
+<aside class="notes">
+<ul class="org-ul">
+<li>can be disabled using <code>-s</code>
+</li>
+</ul>
+</aside>
+</section>
+
+</section>
+<section>
+<section id="sec-8" >
+
+<h2>Common Options</h2>
+<ul class="org-ul">
+<li><code>-s</code> disable output capture
+</li>
+<li><code>-x</code> exit on first failure
+</li>
+<li><code>-k</code> only run matching tests
+</li>
+<li><code>-l</code> show locals
+</li>
+<li><code>--pdb</code> enter debugger on errors
+</li>
+<li><code>-rsxXw</code> <code>-ra</code> report skipped, xfailed, &#x2026;
+</li>
+<li>defaults in <code>pytest.ini</code>
+</li>
+</ul>
+
+</section>
+<section id="sec-8-1" >
+
+<h3>showlocals</h3>
+<pre class="example">
+$ py.test -ql
+F
+========================== FAILURES ===========================
+__________________________ test_func __________________________
+
+    def test_func():
+&gt;       func(3)
+
+
+test_ex.py:8:
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+b = 3
+
+    def func(b):
+        a = 1
+        a += b
+        c = a * b
+&gt;       return c / 0
+E       ZeroDivisionError: division by zero
+
+a          = 4
+b          = 3
+c          = 12
+
+test_ex.py:5: ZeroDivisionError
+</pre>
+
+</section>
+<section id="sec-8-2" >
+
+<h3>Selecting Tests</h3>
+<div class="org-src-container">
+
+<pre  class="src src-python"><span style="color: #859900; font-weight: bold;">def</span> <span style="color: #268bd2;">test_foo</span>():
+<span style="background-color: #eee8d5;"> </span>   <span style="color: #859900; font-weight: bold;">assert</span> <span style="color: #268bd2; font-weight: bold;">True</span>
+
+<span style="color: #859900; font-weight: bold;">def</span> <span style="color: #268bd2;">test_bar</span>():
+<span style="background-color: #eee8d5;"> </span>   <span style="color: #859900; font-weight: bold;">assert</span> <span style="color: #268bd2; font-weight: bold;">True</span>
+</pre>
+</div>
+
+<pre class="example">
+$ py.test -v -k foo
+===================== test session starts =====================
+platform linux -- Python 3.4.3, pytest-2.8.0, py-1.4.30, pluggy
+cachedir: .cache
+rootdir: /tmp/sandbox, inifile:
+collected 2 items
+
+test_ex.py::test_foo PASSED
+
+================ 1 tests deselected by '-kfoo' ================
+=========== 1 passed, 1 deselected in 0.12 seconds ============
+</pre>
+</section>
+
+</section>
+<section>
+<section id="sec-9" >
+
+<h2>Skipping, xfail &amp; marks</h2>
+<div class="org-src-container">
+
+<pre  class="src src-python"><span style="color: #859900; font-weight: bold;">import</span> os, pytest
+
+<span style="color: #b58900;">@pytest.mark.skipif</span>(os.name != <span style="color: #2aa198;">'posix'</span>, reason=<span style="color: #2aa198;">'Not supported'</span>)
+<span style="color: #859900; font-weight: bold;">def</span> <span style="color: #268bd2;">test_pipe</span>():
+<span style="background-color: #eee8d5;"> </span>   <span style="color: #268bd2;">r</span>, <span style="color: #268bd2;">w</span> = os.pipe()
+<span style="background-color: #eee8d5;"> </span>   <span style="color: #859900; font-weight: bold;">assert</span> 1
+
+<span style="color: #b58900;">@pytest.mark.xfail</span>
+<span style="color: #859900; font-weight: bold;">def</span> <span style="color: #268bd2;">test_oops</span>():
+<span style="background-color: #eee8d5;"> </span>   <span style="color: #859900; font-weight: bold;">assert</span> 0
+
+<span style="color: #b58900;">@pytest.mark.mymark</span>
+<span style="color: #859900; font-weight: bold;">def</span> <span style="color: #268bd2;">test_foo</span>():
+<span style="background-color: #eee8d5;"> </span>   <span style="color: #859900; font-weight: bold;">assert</span> 1
+</pre>
+</div>
+
+<ul class="org-ul">
+<li>Select tests by mark: ~-m 'not mymark'~
+</li>
+<li>Marks also useful in plugins
+</li>
+</ul>
+
+</section>
+<section id="sec-9-1" >
+
+<h3>Output</h3>
+<pre class="example">
+&gt; py.test -ra
+===================== test session starts =====================
+platform linux -- Python 3.4.3, pytest-2.8.0, py-1.4.30, pluggy-0.3.1
+rootdir: /tmp/sandbox, inifile:
+collected 3 items
+
+test_ex.py sx.
+=================== short test summary info ===================
+SKIP [1] test_ex.py:2: Not supported
+XFAIL test_ex.py::test_oops
+
+======= 1 passed, 1 skipped, 1 xfailed in 0.07 seconds ========
+</pre>
+</section>
+
+</section>
+<section>
+<section id="sec-10" >
+
+<h2>Fixtures</h2>
+<ul class="org-ul">
+<li>Dependecy injection
+</li>
+<li>Isolation
+</li>
+<li>(<code>.setUp()</code> <code>.tearDown()</code>)
+</li>
+</ul>
+
+<div class="org-src-container">
+
+<pre  class="src src-python"><span style="color: #859900; font-weight: bold;">import</span> pytest
+
+<span style="color: #b58900;">@pytest.fixture</span>
+<span style="color: #859900; font-weight: bold;">def</span> <span style="color: #268bd2;">somevalue</span>():
+<span style="background-color: #eee8d5;"> </span>   <span style="color: #859900; font-weight: bold;">return</span> 42
+
+<span style="color: #859900; font-weight: bold;">def</span> <span style="color: #268bd2;">test_value</span>(somevalue):
+<span style="background-color: #eee8d5;"> </span>   <span style="color: #859900; font-weight: bold;">assert</span> somevalue == 42
+</pre>
+</div>
+</section>
+
+</section>
+<section>
+<section id="sec-11" >
+
+<h2>Fixture finalizer</h2>
+<div class="org-src-container">
+
+<pre  class="src src-python"><span style="color: #859900; font-weight: bold;">import</span> pytest
+
+<span style="color: #b58900;">@pytest.fixture</span>
+<span style="color: #859900; font-weight: bold;">def</span> <span style="color: #268bd2;">db</span>(request):
+<span style="background-color: #eee8d5;"> </span>   <span style="color: #268bd2;">conn</span> = create_conn()
+
+<span style="background-color: #eee8d5;"> </span>   <span style="color: #859900; font-weight: bold;">def</span> <span style="color: #268bd2;">fin</span>():
+<span style="background-color: #eee8d5;"> </span>   <span style="background-color: #eee8d5;"> </span>   destroy_db(conn)
+
+<span style="background-color: #eee8d5;"> </span>   request.addfinalizer(fin)
+<span style="background-color: #eee8d5;"> </span>   <span style="color: #859900; font-weight: bold;">return</span> conn
+
+<span style="color: #859900; font-weight: bold;">def</span> <span style="color: #268bd2;">test_something_with_db</span>(db):
+<span style="background-color: #eee8d5;"> </span>   <span style="color: #859900; font-weight: bold;">assert</span> func(db)
+</pre>
+</div>
+</section>
+
+</section>
+<section>
+<section id="sec-12" >
+
+<h2>Builtin fixture: tmpdir</h2>
+<div class="org-src-container">
+
+<pre  class="src src-python"><span style="color: #859900; font-weight: bold;">def</span> <span style="color: #268bd2;">write</span>(fname):
+<span style="background-color: #eee8d5;"> </span>   <span style="color: #859900; font-weight: bold;">with</span> <span style="color: #657b83; font-weight: bold;">open</span>(fname, <span style="color: #2aa198;">'w'</span>) <span style="color: #859900; font-weight: bold;">as</span> fp:
+<span style="background-color: #eee8d5;"> </span>   <span style="background-color: #eee8d5;"> </span>   fp.write(<span style="color: #2aa198;">'hello world'</span>)
+
+<span style="color: #859900; font-weight: bold;">def</span> <span style="color: #268bd2;">test_output</span>(tmpdir):
+<span style="background-color: #eee8d5;"> </span>   <span style="color: #268bd2;">out_txt</span> = tmpdir.join(<span style="color: #2aa198;">'out.txt'</span>)
+<span style="background-color: #eee8d5;"> </span>   write(<span style="color: #657b83; font-weight: bold;">str</span>(out_txt))
+<span style="background-color: #eee8d5;"> </span>   <span style="color: #859900; font-weight: bold;">assert</span> out_txt.read() == <span style="color: #2aa198;">'hello world'</span>
+</pre>
+</div>
+</section>
+
+</section>
+<section>
+<section id="sec-13" >
+
+<h2>Builtin fixture: monkeypatch</h2>
+<div class="org-src-container">
+
+<pre  class="src src-python"><span style="color: #859900; font-weight: bold;">import</span> sys
+
+<span style="color: #859900; font-weight: bold;">def</span> <span style="color: #268bd2;">test_platform_win</span>(monkeypatch):
+<span style="background-color: #eee8d5;"> </span>   monkeypatch.<span style="color: #657b83; font-weight: bold;">setattr</span>(sys, <span style="color: #2aa198;">'platform'</span>, <span style="color: #2aa198;">'win32'</span>)
+<span style="background-color: #eee8d5;"> </span>   <span style="color: #859900; font-weight: bold;">assert</span> sys.platform == <span style="color: #2aa198;">'win32'</span>
+
+<span style="color: #859900; font-weight: bold;">def</span> <span style="color: #268bd2;">test_platform</span>():
+<span style="background-color: #eee8d5;"> </span>   <span style="color: #859900; font-weight: bold;">assert</span> sys.platform == <span style="color: #2aa198;">'posix'</span>
+</pre>
+</div>
+</section>
+
+</section>
+<section>
+<section id="sec-14" >
+
+<h2>More</h2>
+<ul class="org-ul">
+<li>parametrization
+</li>
+<li>fixtures
+<ul class="org-ul">
+<li>parametrization
+</li>
+<li>scopes
+</li>
+</ul>
+</li>
+<li>local plugins: <code>conftest.py</code>
+<ul class="org-ul">
+<li>command line options
+</li>
+<li>extra config setup
+</li>
+</ul>
+</li>
+</ul>
+</section>
+
+</section>
+<section>
+<section id="sec-15" >
+
+<h2>Questions?</h2>
+</section>
+</section>
+</div>
+</div>
+
+<script src="./reveal.js/lib/js/head.min.js"></script>
+<script src="./reveal.js/js/reveal.min.js"></script>
+
+<script>
+// Full list of configuration options available here:
+// https://github.com/hakimel/reveal.js#configuration
+Reveal.initialize({
+
+controls: true,
+progress: true,
+history: false,
+center: true,
+slideNumber: true,
+rollingLinks: false,
+keyboard: true,
+overview: true,
+
+theme: Reveal.getQueryHash().theme, // available themes are in /css/theme
+transition: Reveal.getQueryHash().transition || 'default', // default/cube/page/concave/zoom/linear/fade/none
+transitionSpeed: 'default',
+
+// Optional libraries used to extend on reveal.js
+dependencies: [
+ { src: './reveal.js/plugin/highlight/highlight.js', async: true, callback: function() { hljs.initHighlightingOnLoad(); } },
+ { src: './reveal.js/plugin/notes/notes.js', async: true, condition: function() { return !!document.body.classList; } }
+]
+});
+</script>
+</body>
+</html>
