@@ -1,4 +1,6 @@
-:title: Pytest Intro
+------------
+Pytest Intro
+------------
 :author:  `Floris Bruynooghe <flub@devork.be>`
 :author:  `Ronny Pfannschmidt <opensource@ronnypfannschmidt.de>`
 
