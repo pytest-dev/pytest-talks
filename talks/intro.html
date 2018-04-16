@@ -1,31 +1,50 @@
-------------
+<doctype html>
+<html>
+<head>
+	<meta charset="utf-8"/>
+	<link rel="stylesheet" href="../assets/reveal.js/css/reveal.css">
+	<link rel="stylesheet" href="../assets/reveal.js/css/theme/white.css">
+
+
+		<!-- Theme used for syntax highlighting of code -->
+		<link rel="stylesheet" href="../assets/reveal.js/lib/css/zenburn.css">
+
+	<title>Pytest Intro</title>
+</head>
+<body>
+<div class="reveal">
+
+<div class="slides">
+
+
+<section data-markdown>
+
 Pytest Intro
 ------------
-:author:  `Floris Bruynooghe <flub@devork.be>`
-:author:  `Ronny Pfannschmidt <opensource@ronnypfannschmidt.de>`
+- [Floris Bruynooghe](mailto:flub@devork.be) - bulk content
+- [Ronny Pfannschmidt](mailto:opensource@ronnypfannschmidt.de) - retouch
 
 
-
+</section>
+<section data-markdown>
 
 Overview
 --------- 
 
-* py.test
+* ![pytest logo](./pytest1.png)
+* http://pytest.org
+* http://github.com/pytest-dev/pytest
 
-  .. image:: ./pytest1.png
-
-* `<http://pytest.org>`_
-* `<http://github.com/pytest-dev/pytest>`_ 
-
-
-.. 
-  #+BEGIN_NOTES
+</section>
+<aside class="notes" data-markdown>
   - py.test vs pytest
   - Do not get confused with pylint/logilab-common!
   - Been around very long
     - transformed quite a bit
-  #+END_NOTES
+</aside>
 
+
+<section data-markdown>
 Introduction
 ------------
 
@@ -40,14 +59,11 @@ Introduction
 - xdist
 - plugins
 - runs unittest & nose tests too
-- ...
 
-
-Simple Tests
-------------
-
-.. code:: python
-
+</section>
+<section>
+<h2>Simple Tests</h2>
+<pre><code class="python">
   def test_int_casting():
       assert int('5') == 5
 
@@ -59,12 +75,12 @@ Simple Tests
 
       def test_e(self):
           assert float('3.1e3') == 3100.0
+</code></pre>
+</section>
 
-output
-------
-
-.. code::
-
+<section>
+<h2>output</h2>
+<pre><code>
   $ py.test
   ========================= test session starts =========================
   platform linux -- Python 3.4.3, pytest-2.8.0, py-1.4.30, pluggy-0.3.1
@@ -74,23 +90,18 @@ output
   test.py ...
 
   ====================== 3 passed in 0.01 seconds =======================
+</code></pre>
+</section>
 
-..
-  #+BEGIN_NOTES
-  - classes mostly for structures
-  - discovery
-  #+END_NOTES
+<section>
+<h2>Detailed Failure Reports</h2>
 
-Detailed Failure Reports
-------------------------
-
-.. code:: python
+<pre><code>
 
   def test_wrong():
       assert 'Some test about spam' == 'Some blurb about ham'
-
-.. code::
-
+</code></pre>
+<pre><code>
 
   $ py.test -q
   ========================= test session starts =========================
@@ -114,36 +125,25 @@ Detailed Failure Reports
   test.py:2: AssertionError
   ====================== 1 failed in 0.01 seconds =======================
 
-
-..
-  #+BEGIN_NOTES
-  - can be customised
-  #+END_NOTES
-
-Assertions
-==========
-
-..code:: python
-
-  def test_assertions():
-      x = y = 0
-      assert x
-      assert x == 1
-      assert x != 2
-      assert not x
-      assert 3 < x < 5 and y < 5
-      s = 'the quick fox ...'
-      assert 'fox' in s
-
-..
-  #+BEGIN_NOTES
-  - native assert for everything
-  #+END_NOTES
-
-Expected Exceptions
--------------------
-
-.. code:: python
+</code></pre>
+</section>
+<section>
+<h2>Assertions</h2>
+<pre><code>
+def test_assertions():
+  x = y = 0
+  assert x
+  assert x == 1
+  assert x != 2
+  assert not x
+  assert 3 < x < 5 and y < 5
+  s = 'the quick fox ...'
+  assert 'fox' in s
+</code></pre>
+</section>
+<section>
+<h2>Expected Exceptions</h2>
+<pre><code>
 
   import pytest
 
@@ -160,21 +160,20 @@ Expected Exceptions
       assert exc.value.args = (42, 'msg')
       assert exc.type is Exception
       assert exc.tb
+</code></pre>
+</section>
+<section>
+<h2>Output Capture</h2>
 
-Output Capture
---------------
-
-.. code:: python
-
+<pre><code class=python>
   def func(a):
       print('input was: {!r}'.format(a))
       return a + 42
 
   def test_func():
       assert func(5) < 5
-
-.. code::
-
+</code></pre>
+<pre><code>
   $ py.test
   ========================= test session starts =========================
   platform linux -- Python 3.4.3, pytest-2.8.0, py-1.4.30, pluggy-0.3.1
@@ -195,27 +194,29 @@ Output Capture
   -------------------------- Captured stdout call -----------------------
   input was: 5
   ======================== 1 failed in 0.05 seconds =====================
-
-..
+</code></pre>
+<!--..
   #+BEGIN_NOTES
   - can be disabled using ~-s~
   #+END_NOTES
-
+-->
+</section>
+<section data-markdown>
 Common Options
 --------------
 
-- ~-s~ disable output capture
-- ~-x~ exit on first failure
-- ~-k~ only run matching tests
-- ~-l~ show locals
-- ~--pdb~ enter debugger on errors
-- ~-rsxXw~ ~-ra~ report skipped, xfailed, ...
-- defaults in ~pytest.ini~
+- `-s` disable output capture
+- `-x` exit on first failure
+- `-k` only run matching tests
+- `-l` show locals
+- `--pdb` enter debugger on errors
+- `-rsxXw` `-ra` report skipped, xfailed, ...
+- defaults in `pytest.ini`
 
-** showlocals
-
-.. code::
-
+</section>
+<section>
+<h2>showlocals</h2>
+<pre><code>
   $ py.test -ql
   F
   ========================== FAILURES ===========================
@@ -242,21 +243,20 @@ Common Options
   c          = 12
 
   test_ex.py:5: ZeroDivisionError
+</code></pre>
 
+</section>
+<section>
+<h2>Selecting Tests</h2>
 
-Selecting Tests
-===============
-
-..code:: python
-
+<pre><code>
   def test_foo():
       assert True
 
   def test_bar():
       assert True
-
-..code::
-
+</code></pre>
+<pre><code>
   $ py.test -v -k foo
   ===================== test session starts =====================
   platform linux -- Python 3.4.3, pytest-2.8.0, py-1.4.30, pluggy
@@ -268,36 +268,35 @@ Selecting Tests
 
   ================ 1 tests deselected by '-kfoo' ================
   =========== 1 passed, 1 deselected in 0.12 seconds ============
+</code></pre>
+</section>
 
-Skipping, xfail & marks
------------------------
+<section>
+<h2>Skipping, xfail & marks</h2>
+<pre><code>import os, pytest
 
-.. code:: python
+@pytest.mark.skipif(os.name != 'posix', reason='Not supported')
+def test_pipe():
+  r, w = os.pipe()
+  assert 1
 
-  import os, pytest
+@pytest.mark.xfail
+def test_oops():
+  assert 0
 
-  @pytest.mark.skipif(os.name != 'posix', reason='Not supported')
-  def test_pipe():
-      r, w = os.pipe()
-      assert 1
-
-  @pytest.mark.xfail
-  def test_oops():
-      assert 0
-
-  @pytest.mark.mymark
-  def test_foo():
-      assert 1
-
-- Select tests by mark: ~-m 'not mymark'~
+@pytest.mark.mymark
+def test_foo():
+  assert 1</code></pre>
+<p data-markdown>
+- Select tests by mark: `-m 'not mymark'`
 - Marks also useful in plugins
+</p>
+</section>
+<section>
+<h2>Output</h2>
 
-Output
-------
-
-.. code::
-
-  > py.test -ra
+<pre><code>
+   py.test -ra
   ===================== test session starts =====================
   platform linux -- Python 3.4.3, pytest-2.8.0, py-1.4.30, pluggy-0.3.1
   rootdir: /tmp/sandbox, inifile:
@@ -309,16 +308,16 @@ Output
   XFAIL test_ex.py::test_oops
 
   ======= 1 passed, 1 skipped, 1 xfailed in 0.07 seconds ========
-
-Fixtures
----------
-
+</code></pre>
+</section>
+<section>
+<h2>Fixtures</h2>
+<p data-markdown>
 - Dependecy injection
 - Isolation
-- (~.setUp()~ ~.tearDown()~)
-
-.. code:: python
-
+- (`.setUp()` `.tearDown()`)
+</p>
+<pre><code>
   import pytest
 
   @pytest.fixture
@@ -327,32 +326,28 @@ Fixtures
 
   def test_value(somevalue):
       assert somevalue == 42
+</code></pre>
+</section>
+<section>
+<h2>Fixture finalizer</h2>
 
-Fixture finalizer
-------------------
-
-.. code:: python
-
+<pre><code>
   import pytest
 
   @pytest.fixture
   def db(request):
       conn = create_conn()
-
-      def fin():
-          destroy_db(conn)
-
-      request.addfinalizer(fin)
-      return conn
+      yield conn
+      destroy_db(conn)
 
   def test_something_with_db(db):
       assert func(db)
+</code></pre>
+</section>
+<section>
+<h2>Builtin fixture: tmpdir</h2>
 
-Builtin fixture: tmpdir
-------------------------
-
-.. code:: python
-
+<pre><code>
   def write(fname):
       with open(fname, 'w') as fp:
           fp.write('hello world')
@@ -361,12 +356,12 @@ Builtin fixture: tmpdir
       out_txt = tmpdir.join('out.txt')
       write(str(out_txt))
       assert out_txt.read() == 'hello world'
+</code></pre>
+</section>
+<section>
+<h2>Builtin fixture: monkeypatch</h2>
 
-Builtin fixture: monkeypatch
-----------------------------
-
-.. code:: python
-
+<pre><code>
   import sys
 
   def test_platform_win(monkeypatch):
@@ -375,7 +370,9 @@ Builtin fixture: monkeypatch
 
   def test_platform():
       assert sys.platform == 'posix'
-
+</code></pre>
+</section>
+<section data-markdown>
 More
 ----
 
@@ -383,10 +380,37 @@ More
 - fixtures
   - parametrization
   - scopes
-- local plugins: ~conftest.py~
+- local plugins: **conftest.py**
   - command line options
   - extra config setup
 
 
+</section>
+<section data-markdown>
 Questions?
 ----------
+
+</section>
+
+</div>
+</div>
+<script src="../assets/reveal.js/js/reveal.js"></script>
+<script src="../assets/reveal.js/lib/js/head.min.js"></script>
+<script>
+	Reveal.initialize({
+	history: true,
+	dependencies: [
+		// Interpret Markdown in <section> elements
+		{ src: '../assets/reveal.js/plugin/markdown/marked.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+		{ src: '../assets/reveal.js/plugin/markdown/markdown.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+		// Syntax highlight for <code> elements
+		{ src: '../assets/reveal.js/plugin/highlight/highlight.js', async: true, callback: function() { hljs.initHighlightingOnLoad(); } },
+
+		{ src: '../assets/reveal.js/plugin/notes/notes.js', async: true },
+
+
+
+	]});
+</script>
+</body>
+</html>
