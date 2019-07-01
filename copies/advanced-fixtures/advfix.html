@@ -1,0 +1,672 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<title>Advanced py.test Fixtures</title>
+<meta name="author" content="(Floris Bruynooghe)"/>
+
+<link rel="stylesheet" href="./reveal.js/css/reveal.min.css"/>
+<link rel="stylesheet" href="./reveal.js/css/theme/solarized.css" id="theme"/>
+
+<!-- If the query includes 'print-pdf', include the PDF print sheet -->
+<script>
+    if( window.location.search.match( /print-pdf/gi ) ) {
+        var link = document.createElement( 'link' );
+        link.rel = 'stylesheet';
+        link.type = 'text/css';
+        link.href = './reveal.js/css/print/pdf.css';
+        document.getElementsByTagName( 'head' )[0].appendChild( link );
+    }
+</script>
+</head>
+<body>
+<div class="reveal">
+<div class="slides">
+<section>
+<h1>Advanced py.test Fixtures</h1>
+<h2>Floris Bruynooghe</h2>
+<h2><a href="mailto:flub@devork.be">flub@devork.be</a></h2>
+<h2></h2></section>
+
+
+<section>
+<section id="sec-1" >
+
+<h2>Introduction</h2>
+<p>
+Fixtures are powerful:
+</p>
+<ul class="org-ul">
+<li>Dependency Injection
+</li>
+<li>Isolated
+</li>
+<li>Composable
+</li>
+</ul>
+
+<p>
+Assume you know:
+</p>
+<ul class="org-ul">
+<li>py.test
+</li>
+<li>basic fixtures
+</li>
+</ul>
+
+<aside class="notes">
+<ul class="org-ul">
+<li>Been using and contributing to py.test for a few years
+</li>
+<li>Use at own risk
+</li>
+<li>Some patterns we use in ~70k source
+</li>
+<li>Some from pytest-django
+</li>
+<li>Some made up stuff
+</li>
+</ul>
+</aside>
+</section>
+</section>
+<section>
+<section id="sec-2" >
+
+<h2>The Basics</h2>
+<p>
+You should know this:
+</p>
+
+<div class="org-src-container">
+
+<pre  class="src src-python"><span style="color: #859900; font-weight: bold;">import</span> pytest
+
+<span style="color: #b58900;">@pytest.fixture</span>
+<span style="color: #859900; font-weight: bold;">def</span> <span style="color: #268bd2;">foo</span>():
+<span style="color: #657b83; background-color: #eee8d5;"> </span>   <span style="color: #859900; font-weight: bold;">return</span> 42
+
+<span style="color: #859900; font-weight: bold;">def</span> <span style="color: #268bd2;">test_foo</span>(foo):
+<span style="color: #657b83; background-color: #eee8d5;"> </span>   <span style="color: #859900; font-weight: bold;">assert</span> foo == 42
+
+ <span style="color: #859900; font-weight: bold;">class</span> <span style="color: #b58900;">TestBar</span>:
+
+<span style="color: #657b83; background-color: #eee8d5;"> </span>   <span style="color: #b58900;">@pytest.fixture</span>
+<span style="color: #657b83; background-color: #eee8d5;"> </span>   <span style="color: #859900; font-weight: bold;">def</span> <span style="color: #268bd2;">bar</span>(<span style="color: #859900; font-weight: bold;">self</span>, request):
+<span style="color: #657b83; background-color: #eee8d5;"> </span>   <span style="color: #657b83; background-color: #eee8d5;"> </span>   <span style="color: #859900; font-weight: bold;">def</span> <span style="color: #268bd2;">fin</span>():
+<span style="color: #657b83; background-color: #eee8d5;"> </span>   <span style="color: #657b83; background-color: #eee8d5;"> </span>   <span style="color: #657b83; background-color: #eee8d5;"> </span>   <span style="color: #859900; font-weight: bold;">print</span>(<span style="color: #2aa198;">'Teardown of fixture bar'</span>)
+<span style="color: #657b83; background-color: #eee8d5;"> </span>   <span style="color: #657b83; background-color: #eee8d5;"> </span>   request.addfinalizer(fin)
+<span style="color: #657b83; background-color: #eee8d5;"> </span>   <span style="color: #657b83; background-color: #eee8d5;"> </span>   <span style="color: #859900; font-weight: bold;">return</span> 7
+
+<span style="color: #657b83; background-color: #eee8d5;"> </span>   <span style="color: #859900; font-weight: bold;">def</span> <span style="color: #268bd2;">test_bar</span>(<span style="color: #859900; font-weight: bold;">self</span>, foo, bar):
+<span style="color: #657b83; background-color: #eee8d5;"> </span>   <span style="color: #657b83; background-color: #eee8d5;"> </span>   <span style="color: #859900; font-weight: bold;">assert</span> foo != bar
+</pre>
+</div>
+
+<aside class="notes">
+<ul class="org-ul">
+<li>Dependency Injection!
+</li>
+<li>Hope you know this
+</li>
+<li>Andreas explained that this morning
+</li>
+</ul>
+</aside>
+</section>
+</section>
+<section>
+<section id="sec-3" >
+
+<h2>Caching fixtures</h2>
+<p>
+Fixture decorator has scope argument:
+</p>
+
+<div class="org-src-container">
+
+<pre  class="src src-python"><span style="color: #b58900;">@pytest.fixture</span>(scope=<span style="color: #2aa198;">'session'</span>)
+<span style="color: #859900; font-weight: bold;">def</span> <span style="color: #268bd2;">foo</span>(request):
+<span style="color: #657b83; background-color: #eee8d5;"> </span>   <span style="color: #859900; font-weight: bold;">print</span>(<span style="color: #2aa198;">'session setup'</span>)
+<span style="color: #657b83; background-color: #eee8d5;"> </span>   <span style="color: #859900; font-weight: bold;">def</span> <span style="color: #268bd2;">fin</span>():
+<span style="color: #657b83; background-color: #eee8d5;"> </span>   <span style="color: #657b83; background-color: #eee8d5;"> </span>   <span style="color: #859900; font-weight: bold;">print</span>(<span style="color: #2aa198;">'session finalizer'</span>)
+<span style="color: #657b83; background-color: #eee8d5;"> </span>   request.addfinalizer(fin)
+<span style="color: #657b83; background-color: #eee8d5;"> </span>   <span style="color: #859900; font-weight: bold;">return</span> f
+
+<span style="color: #b58900;">@pytest.fixture</span>(scope=<span style="color: #2aa198;">'function'</span>)  <span style="color: #93a1a1;"># </span><span style="color: #93a1a1;">default scope</span>
+<span style="color: #859900; font-weight: bold;">def</span> <span style="color: #268bd2;">bar</span>(request):
+<span style="color: #657b83; background-color: #eee8d5;"> </span>   <span style="color: #859900; font-weight: bold;">print</span>(<span style="color: #2aa198;">'funtion setup'</span>)
+<span style="color: #657b83; background-color: #eee8d5;"> </span>   <span style="color: #859900; font-weight: bold;">def</span> <span style="color: #268bd2;">fin</span>():
+<span style="color: #657b83; background-color: #eee8d5;"> </span>   <span style="color: #657b83; background-color: #eee8d5;"> </span>   <span style="color: #859900; font-weight: bold;">print</span>(<span style="color: #2aa198;">'function finalizer'</span>)
+<span style="color: #657b83; background-color: #eee8d5;"> </span>   request.addfinalizer(fin)
+<span style="color: #657b83; background-color: #eee8d5;"> </span>   <span style="color: #859900; font-weight: bold;">return</span> b
+
+<span style="color: #859900; font-weight: bold;">def</span> <span style="color: #268bd2;">test_one</span>(foo, bar):
+<span style="color: #657b83; background-color: #eee8d5;"> </span>   <span style="color: #859900; font-weight: bold;">pass</span>
+
+<span style="color: #859900; font-weight: bold;">def</span> <span style="color: #268bd2;">test_two</span>(foo, bar):
+<span style="color: #657b83; background-color: #eee8d5;"> </span>   <span style="color: #859900; font-weight: bold;">pass</span>
+</pre>
+</div>
+
+<aside class="notes">
+<ul class="org-ul">
+<li>Cached on scope automatically
+</li>
+</ul>
+</aside>
+
+</section>
+<section id="sec-3-1" >
+
+<h3>Caching Fixtures</h3>
+<pre class="example">
+$ py.test test_ex.py -s
+========================== test session starts ==========================
+platform linux2 -- Python 2.7.6 -- py-1.4.20 -- pytest-2.5.2
+plugins: timeout, capturelog, xdist
+collected 2 items 
+
+test_ex.py session setup
+funtion setup
+.function finalizer
+function setup
+.function finalizer
+session finalizer
+
+======================= 2 passed in 0.07 seconds ========================
+
+Process *pytest* finished
+</pre>
+
+<p>
+Available scopes: function, class, module, session
+</p>
+
+<aside class="notes">
+<ul class="org-ul">
+<li>session only setup once
+</li>
+<li>fuction twice
+</li>
+<li><code>-s</code> does not capture stdout
+</li>
+<li>Scopes: function, class, module, session
+</li>
+</ul>
+</aside>
+</section>
+</section>
+<section>
+<section id="sec-4" >
+
+<h2>Interdependent fixtures</h2>
+<p>
+Fixture can use fixtures too:
+</p>
+
+<div class="org-src-container">
+
+<pre  class="src src-python"><span style="color: #b58900;">@pytest.fixture</span>(scope=<span style="color: #2aa198;">'session'</span>)
+<span style="color: #859900; font-weight: bold;">def</span> <span style="color: #268bd2;">db_conn</span>():
+<span style="color: #657b83; background-color: #eee8d5;"> </span>   <span style="color: #859900; font-weight: bold;">return</span> create_db_conn()
+
+<span style="color: #b58900;">@pytest.fixture</span>(scope=<span style="color: #2aa198;">'module'</span>)
+<span style="color: #859900; font-weight: bold;">def</span> <span style="color: #268bd2;">db_table</span>(request, db_conn):
+<span style="color: #657b83; background-color: #eee8d5;"> </span>   <span style="color: #268bd2;">table</span> = create_table(db_conn, <span style="color: #2aa198;">'foo'</span>)
+<span style="color: #657b83; background-color: #eee8d5;"> </span>   <span style="color: #859900; font-weight: bold;">def</span> <span style="color: #268bd2;">fin</span>():
+<span style="color: #657b83; background-color: #eee8d5;"> </span>   <span style="color: #657b83; background-color: #eee8d5;"> </span>   drop_table(db_conn, table)
+<span style="color: #657b83; background-color: #eee8d5;"> </span>   request.addfinalizer(fin)
+<span style="color: #657b83; background-color: #eee8d5;"> </span>   <span style="color: #859900; font-weight: bold;">return</span> table
+
+<span style="color: #859900; font-weight: bold;">def</span> <span style="color: #268bd2;">test_bar</span>(db_table):
+<span style="color: #657b83; background-color: #eee8d5;"> </span>   <span style="color: #859900; font-weight: bold;">pass</span>
+</pre>
+</div>
+
+<aside class="notes">
+<ul class="org-ul">
+<li>Fixtures can depend on each other
+</li>
+<li>Functional test example
+</li>
+<li>Request is just a built-in fixture
+</li>
+</ul>
+</aside>
+</section>
+</section>
+<section>
+<section id="sec-5" >
+
+<h2>Skip/fail in fixture</h2>
+<p>
+Fixtures can trigger skipping/failing of all dependent tests:
+</p>
+
+<div class="org-src-container">
+
+<pre  class="src src-python"><span style="color: #b58900;">@pytest.fixture</span>(scope=<span style="color: #2aa198;">'session'</span>)
+<span style="color: #859900; font-weight: bold;">def</span> <span style="color: #268bd2;">redis_client</span>():
+<span style="color: #657b83; background-color: #eee8d5;"> </span>   <span style="color: #268bd2;">servers</span> = [<span style="color: #2aa198;">'localhost'</span>, <span style="color: #2aa198;">'venera.clockhouse'</span>]
+<span style="color: #657b83; background-color: #eee8d5;"> </span>   <span style="color: #859900; font-weight: bold;">for</span> hostname <span style="color: #859900; font-weight: bold;">in</span> servers:
+<span style="color: #657b83; background-color: #eee8d5;"> </span>   <span style="color: #657b83; background-color: #eee8d5;"> </span>   <span style="color: #859900; font-weight: bold;">try</span>:
+<span style="color: #657b83; background-color: #eee8d5;"> </span>   <span style="color: #657b83; background-color: #eee8d5;"> </span>   <span style="color: #657b83; background-color: #eee8d5;"> </span>   <span style="color: #859900; font-weight: bold;">return</span> redis.StrictRedis(hostname)
+<span style="color: #657b83; background-color: #eee8d5;"> </span>   <span style="color: #657b83; background-color: #eee8d5;"> </span>   <span style="color: #859900; font-weight: bold;">except</span> redis.ConnectionError:
+<span style="color: #657b83; background-color: #eee8d5;"> </span>   <span style="color: #657b83; background-color: #eee8d5;"> </span>   <span style="color: #657b83; background-color: #eee8d5;"> </span>   <span style="color: #859900; font-weight: bold;">continue</span>
+<span style="color: #657b83; background-color: #eee8d5;"> </span>   <span style="color: #859900; font-weight: bold;">else</span>:
+<span style="color: #657b83; background-color: #eee8d5;"> </span>   <span style="color: #657b83; background-color: #eee8d5;"> </span>   pytest.skip(<span style="color: #2aa198;">'No Redis server found'</span>)
+</pre>
+</div>
+
+<aside class="notes">
+<ul class="org-ul">
+<li>In 2.6 this will respect scope
+</li>
+<li>also pytest.fail()
+</li>
+<li>.fail() and .skip() just raise an exception
+</li>
+</ul>
+</aside>
+</section>
+</section>
+<section>
+<section id="sec-6" >
+
+<h2>Marks</h2>
+<p>
+Rember tests can be marked:
+</p>
+
+<div class="org-src-container">
+
+<pre  class="src src-python"><span style="color: #b58900;">@pytest.mark.mymarker</span>
+<span style="color: #b58900;">@pytest.mark.other_marker</span>
+<span style="color: #859900; font-weight: bold;">def</span> <span style="color: #268bd2;">test_something</span>():
+<span style="color: #657b83; background-color: #eee8d5;"> </span>   <span style="color: #859900; font-weight: bold;">pass</span>
+</pre>
+</div>
+
+<p>
+Run tests based on markers:
+</p>
+
+<pre class="example">
+$ py.test -m "not mymarker"
+</pre>
+
+<p>
+Make them strict:
+</p>
+
+<pre class="example">
+# pytest.ini
+[pytest]
+addopts = --strict
+markers =
+    mymarker: a custom marker
+</pre>
+
+<aside class="notes">
+<ul class="org-ul">
+<li>mark a test
+</li>
+<li>run test from command line
+</li>
+<li>Can use <code>--strict</code> and 
+</li>
+</ul>
+</aside>
+</section>
+</section>
+<section>
+<section id="sec-7" >
+
+<h2>Using Marks from Fixtures</h2>
+<div class="org-src-container">
+
+<pre  class="src src-python"><span style="color: #b58900;">@pytest.fixture</span>
+<span style="color: #859900; font-weight: bold;">def</span> <span style="color: #268bd2;">mongo_client</span>(request):
+<span style="color: #657b83; background-color: #eee8d5;"> </span>   <span style="color: #268bd2;">marker</span> = request.node.get_marker(<span style="color: #2aa198;">'mongo_db'</span>)
+<span style="color: #657b83; background-color: #eee8d5;"> </span>   <span style="color: #859900; font-weight: bold;">if</span> <span style="color: #859900; font-weight: bold;">not</span> marker:
+<span style="color: #657b83; background-color: #eee8d5;"> </span>   <span style="color: #657b83; background-color: #eee8d5;"> </span>   <span style="color: #268bd2;">db</span> = <span style="color: #2aa198;">'TestDB'</span>
+<span style="color: #657b83; background-color: #eee8d5;"> </span>   <span style="color: #859900; font-weight: bold;">else</span>:
+<span style="color: #657b83; background-color: #eee8d5;"> </span>   <span style="color: #657b83; background-color: #eee8d5;"> </span>   <span style="color: #859900; font-weight: bold;">def</span> <span style="color: #268bd2;">apifun</span>(db):
+<span style="color: #657b83; background-color: #eee8d5;"> </span>   <span style="color: #657b83; background-color: #eee8d5;"> </span>   <span style="color: #657b83; background-color: #eee8d5;"> </span>   <span style="color: #859900; font-weight: bold;">return</span> db
+<span style="color: #657b83; background-color: #eee8d5;"> </span>   <span style="color: #657b83; background-color: #eee8d5;"> </span>   <span style="color: #268bd2;">db</span> = apifun(*marker.args, **marker.kwargs)
+<span style="color: #657b83; background-color: #eee8d5;"> </span>   <span style="color: #859900; font-weight: bold;">return</span> pymongo.MongoClient(<span style="color: #2aa198;">'127.0.0.1/{}'</span>.<span style="color: #657b83; font-weight: bold;">format</span>(db))
+
+<span style="color: #b58900;">@pytest.mark.mongo_db</span>(<span style="color: #2aa198;">'Users'</span>)
+<span style="color: #859900; font-weight: bold;">def</span> <span style="color: #268bd2;">test_something</span>(mongo_client):
+<span style="color: #657b83; background-color: #eee8d5;"> </span>   <span style="color: #859900; font-weight: bold;">pass</span>
+</pre>
+</div>
+
+<aside class="notes">
+<ul class="org-ul">
+<li>Use a mark as a parameter to a fixture
+</li>
+<li>Maybe consider re-designing the fixture
+</li>
+<li>apifun current hack to get python argument parsing
+</li>
+</ul>
+</aside>
+</section>
+</section>
+<section>
+<section id="sec-8" >
+
+<h2>Autouse fixtues</h2>
+<p>
+Setup/teardown without explicit request:
+</p>
+
+<div class="org-src-container">
+
+<pre  class="src src-python"><span style="color: #b58900;">@pytest.mark.linux</span>
+<span style="color: #859900; font-weight: bold;">def</span> <span style="color: #268bd2;">test_mem_stack</span>():
+<span style="color: #657b83; background-color: #eee8d5;"> </span>   <span style="color: #859900; font-weight: bold;">assert</span> MemSizes().stack == 42
+
+<span style="color: #b58900;">@pytest.fixture</span>(autouse=<span style="color: #268bd2; font-weight: bold;">True</span>)
+<span style="color: #859900; font-weight: bold;">def</span> <span style="color: #268bd2;">_platform_skip</span>(request):
+<span style="color: #657b83; background-color: #eee8d5;"> </span>   marker = request.node.get_marker(<span style="color: #2aa198;">'linux'</span>)
+<span style="color: #657b83; background-color: #eee8d5;"> </span>   <span style="color: #859900; font-weight: bold;">if</span> marker <span style="color: #859900; font-weight: bold;">and</span> platform.system() != <span style="color: #2aa198;">'Linux'</span>:
+<span style="color: #657b83; background-color: #eee8d5;"> </span>   <span style="color: #657b83; background-color: #eee8d5;"> </span>   pytest.skip(<span style="color: #2aa198;">'N/A on {}'</span>.<span style="color: #657b83; font-weight: bold;">format</span>(platform.system()))
+</pre>
+</div>
+
+<aside class="notes">
+<ul class="org-ul">
+<li>An autouse fixture to detect the mark
+</li>
+<li>Autouse fixture invoked before each test
+</li>
+<li><code>node.keywords</code>
+</li>
+<li>Autouse also useful without marks
+</li>
+</ul>
+</aside>
+</section>
+</section>
+<section>
+<section id="sec-9" >
+
+<h2>Parametrising fixtures</h2>
+<ul class="org-ul">
+<li>Individual fixtures can be paremeterised
+</li>
+<li>Multiple parameterised fixtures combine
+</li>
+</ul>
+
+<div class="org-src-container">
+
+<pre  class="src src-python"><span style="color: #b58900;">@pytest.fixture</span>(params=[<span style="color: #2aa198;">'ora'</span>, <span style="color: #2aa198;">'pg'</span>, <span style="color: #2aa198;">'sqlite'</span>])
+<span style="color: #859900; font-weight: bold;">def</span> <span style="color: #268bd2;">dburi</span>(request):
+<span style="color: #657b83; background-color: #eee8d5;"> </span>   <span style="color: #859900; font-weight: bold;">return</span> create_db_uri(request.param)
+
+<span style="color: #b58900;">@pytest.fixture</span>(params=[<span style="color: #2aa198;">'ipv4'</span>, <span style="color: #2aa198;">'ipv6'</span>])
+<span style="color: #859900; font-weight: bold;">def</span> <span style="color: #268bd2;">addr_family</span>(request):
+<span style="color: #657b83; background-color: #eee8d5;"> </span>   <span style="color: #859900; font-weight: bold;">return</span> socket.AF_INET <span style="color: #859900; font-weight: bold;">if</span> request.param == <span style="color: #2aa198;">'ipv4'</span> <span style="color: #859900; font-weight: bold;">else</span> socket.AF_INET6
+
+<span style="color: #859900; font-weight: bold;">def</span> <span style="color: #268bd2;">test_txn</span>(dburi):
+<span style="color: #657b83; background-color: #eee8d5;"> </span>   inst = MyObj(dburi)
+<span style="color: #657b83; background-color: #eee8d5;"> </span>   <span style="color: #859900; font-weight: bold;">assert</span> inst.transaction_works()
+
+<span style="color: #859900; font-weight: bold;">def</span> <span style="color: #268bd2;">test_conn</span>(dburi, addr_family):
+<span style="color: #657b83; background-color: #eee8d5;"> </span>   inst = MyObj(dburi, addr_family)
+<span style="color: #657b83; background-color: #eee8d5;"> </span>   <span style="color: #859900; font-weight: bold;">assert</span> inst.it_works()
+</pre>
+</div>
+
+<aside class="notes">
+<ul class="org-ul">
+<li>Powerful, combinatory
+</li>
+<li>Functional test example
+</li>
+<li>This will execute 6 versions of test<sub>func</sub>
+</li>
+</ul>
+</aside>
+</section>
+</section>
+<section>
+<section id="sec-10" >
+
+<h2>Skipping Parameters</h2>
+<p>
+Skipping can be done on a parameter level:
+</p>
+
+<div class="org-src-container">
+
+<pre  class="src src-python"><span style="color: #859900; font-weight: bold;">try</span>:
+<span style="color: #657b83; background-color: #eee8d5;"> </span>   <span style="color: #859900; font-weight: bold;">import</span> cx_Oracle <span style="color: #859900; font-weight: bold;">as</span> ora
+<span style="color: #859900; font-weight: bold;">except</span> <span style="color: #b58900;">ImportError</span>:
+<span style="color: #657b83; background-color: #eee8d5;"> </span>   <span style="color: #268bd2;">ora</span> = <span style="color: #268bd2; font-weight: bold;">None</span>
+
+<span style="color: #268bd2;">needs_ora</span> = pytest.mark.skipif(ora <span style="color: #859900; font-weight: bold;">is</span> <span style="color: #268bd2; font-weight: bold;">None</span>, reason=<span style="color: #2aa198;">'No Oracle installed'</span>)
+
+<span style="color: #b58900;">@pytest.fixture</span>(params=[
+<span style="color: #657b83; background-color: #eee8d5;"> </span>   <span style="color: #2aa198;">'pg'</span>,
+<span style="color: #657b83; background-color: #eee8d5;"> </span>   needs_ora(<span style="color: #2aa198;">'ora'</span>),
+])
+<span style="color: #859900; font-weight: bold;">def</span> <span style="color: #268bd2;">dburi</span>(request):
+<span style="color: #657b83; background-color: #eee8d5;"> </span>   <span style="color: #859900; font-weight: bold;">return</span> create_db_uri(request.param)
+</pre>
+</div>
+
+<aside class="notes">
+<ul class="org-ul">
+<li>Marks can be assigned to vars
+</li>
+</ul>
+</aside>
+</section>
+</section>
+<section>
+<section id="sec-11" >
+
+<h2>Accessing Fixture Info</h2>
+<p>
+Find out what other fixtures are requested:
+</p>
+
+<div class="org-src-container">
+
+<pre  class="src src-python"><span style="color: #b58900;">@pytest.fixture</span>
+<span style="color: #859900; font-weight: bold;">def</span> <span style="color: #268bd2;">db</span>(request):
+<span style="color: #657b83; background-color: #eee8d5;"> </span>   <span style="color: #859900; font-weight: bold;">if</span> <span style="color: #2aa198;">'transactional_db'</span> <span style="color: #859900; font-weight: bold;">in</span> request.fixturenames:
+<span style="color: #657b83; background-color: #eee8d5;"> </span>   <span style="color: #657b83; background-color: #eee8d5;"> </span>   pytest.fail(<span style="color: #2aa198;">'Conflicting fixtures'</span>)
+<span style="color: #657b83; background-color: #eee8d5;"> </span>   <span style="color: #859900; font-weight: bold;">return</span> no_transactions_db()
+
+<span style="color: #b58900;">@pytest.fixture</span>
+<span style="color: #859900; font-weight: bold;">def</span> <span style="color: #268bd2;">transactional_db</span>(request):
+<span style="color: #657b83; background-color: #eee8d5;"> </span>   <span style="color: #859900; font-weight: bold;">if</span> <span style="color: #2aa198;">'db'</span> <span style="color: #859900; font-weight: bold;">in</span> request.fixturenames:
+<span style="color: #657b83; background-color: #eee8d5;"> </span>   <span style="color: #657b83; background-color: #eee8d5;"> </span>   pytest.fail(<span style="color: #2aa198;">'Conflicting fixtures'</span>)
+<span style="color: #657b83; background-color: #eee8d5;"> </span>   <span style="color: #859900; font-weight: bold;">return</span> transactional_db()
+</pre>
+</div>
+
+<aside class="notes">
+<ul class="org-ul">
+<li>Mutual exclusive fixture
+</li>
+</ul>
+</aside>
+</section>
+</section>
+<section>
+<section id="sec-12" >
+
+<h2>Plugins and Hooks</h2>
+<pre class="example">
+myproj/
+  +- myproj/
+  |   +- __init__.py
+  |   +- models.py
+  +- tests/
+      +- contest.py
+      +- test_models.py
+</pre>
+
+<p>
+A few common hooks:
+</p>
+<ul class="org-ul">
+<li><code>pytest_namespace()</code>
+</li>
+<li><code>pytest_addoption(parser)</code>
+</li>
+<li><code>pytest_ignore_collect(path, config)</code>
+</li>
+<li><code>pytest_sessionstart(session)</code>
+</li>
+<li><code>pytest_sessionfinish(session, exitstatus)</code>
+</li>
+<li><code>pytest_assertrepr_compare(config, op, left, right)</code>
+</li>
+</ul>
+
+<p>
+See hookspec for full list
+</p>
+
+<aside class="notes">
+<ul class="org-ul">
+<li><code>conftest.py</code> is a plugin
+</li>
+<li>For advanced test suites you end up writing your own plugin.
+</li>
+<li>Source in hookspec.py or in docs
+</li>
+<li>Arguments are optional
+</li>
+</ul>
+</aside>
+</section>
+</section>
+<section>
+<section id="sec-13" >
+
+<h2>Using commandline options</h2>
+<p>
+New options an be accessed from fixtures and tests:
+</p>
+
+<div class="org-src-container">
+
+<pre  class="src src-python"><span style="color: #93a1a1;">#</span><span style="color: #93a1a1;">conftest.py</span>
+<span style="color: #859900; font-weight: bold;">def</span> <span style="color: #268bd2;">pytest_addoption</span>(parser):
+<span style="color: #657b83; background-color: #eee8d5;"> </span>   parser.addoption(<span style="color: #2aa198;">'--ci'</span>, action=<span style="color: #2aa198;">'store_true'</span>,
+<span style="color: #657b83; background-color: #eee8d5;"> </span>   <span style="color: #657b83; background-color: #eee8d5;"> </span>   <span style="color: #657b83; background-color: #eee8d5;"> </span>   <span style="color: #657b83; background-color: #eee8d5;"> </span>   <span style="color: #657b83; background-color: #eee8d5;"> </span>    <span style="color: #657b83; font-weight: bold;">help</span>=<span style="color: #2aa198;">'Indicate tests are run on CI server'</span>)
+
+<span style="color: #b58900;">@pytest.fixture</span>
+<span style="color: #859900; font-weight: bold;">def</span> <span style="color: #268bd2;">fix</span>(request):
+<span style="color: #657b83; background-color: #eee8d5;"> </span>   <span style="color: #268bd2;">ci</span> = request.config.getoption(<span style="color: #2aa198;">'ci'</span>)
+
+<span style="color: #93a1a1;"># </span><span style="color: #93a1a1;">Test module</span>
+<span style="color: #859900; font-weight: bold;">def</span> <span style="color: #268bd2;">test_foo</span>(pytestconfig):
+<span style="color: #657b83; background-color: #eee8d5;"> </span>   <span style="color: #268bd2;">ci</span> = pytestconfig.getoption(<span style="color: #2aa198;">'ci'</span>)
+</pre>
+</div>
+
+<aside class="notes">
+<ul class="org-ul">
+<li>You can add your own command line options
+</li>
+</ul>
+</aside>
+</section>
+</section>
+<section>
+<section id="sec-14" >
+
+<h2>skip-or-fail</h2>
+<p>
+Skipping not allowed on CI server:
+</p>
+
+<div class="org-src-container">
+
+<pre  class="src src-python"><span style="color: #b58900;">@pytest.fixture</span>(scope=<span style="color: #2aa198;">'session'</span>)
+<span style="color: #859900; font-weight: bold;">def</span> <span style="color: #268bd2;">redis_client</span>(request):
+<span style="color: #657b83; background-color: #eee8d5;"> </span>   <span style="color: #268bd2;">servers</span> = [<span style="color: #2aa198;">'localhost'</span>, <span style="color: #2aa198;">'venera.clockhouse'</span>]
+<span style="color: #657b83; background-color: #eee8d5;"> </span>   <span style="color: #859900; font-weight: bold;">for</span> hostname <span style="color: #859900; font-weight: bold;">in</span> servers:
+<span style="color: #657b83; background-color: #eee8d5;"> </span>   <span style="color: #657b83; background-color: #eee8d5;"> </span>   <span style="color: #859900; font-weight: bold;">try</span>:
+<span style="color: #657b83; background-color: #eee8d5;"> </span>   <span style="color: #657b83; background-color: #eee8d5;"> </span>   <span style="color: #657b83; background-color: #eee8d5;"> </span>   <span style="color: #859900; font-weight: bold;">return</span> redis.StrictRedis(hostname)
+<span style="color: #657b83; background-color: #eee8d5;"> </span>   <span style="color: #657b83; background-color: #eee8d5;"> </span>   <span style="color: #859900; font-weight: bold;">except</span> redis.ConnectionError:
+<span style="color: #657b83; background-color: #eee8d5;"> </span>   <span style="color: #657b83; background-color: #eee8d5;"> </span>   <span style="color: #657b83; background-color: #eee8d5;"> </span>   <span style="color: #859900; font-weight: bold;">continue</span>
+<span style="color: #657b83; background-color: #eee8d5;"> </span>   <span style="color: #859900; font-weight: bold;">else</span>:
+<span style="color: #657b83; background-color: #eee8d5;"> </span>   <span style="color: #657b83; background-color: #eee8d5;"> </span>   <span style="color: #859900; font-weight: bold;">if</span> request.config.getoption(<span style="color: #2aa198;">'ci'</span>):
+<span style="color: #657b83; background-color: #eee8d5;"> </span>   <span style="color: #657b83; background-color: #eee8d5;"> </span>   <span style="color: #657b83; background-color: #eee8d5;"> </span>   pytest.fail(<span style="color: #2aa198;">'No Redis server found'</span>)
+<span style="color: #657b83; background-color: #eee8d5;"> </span>   <span style="color: #657b83; background-color: #eee8d5;"> </span>   <span style="color: #859900; font-weight: bold;">else</span>:
+<span style="color: #657b83; background-color: #eee8d5;"> </span>   <span style="color: #657b83; background-color: #eee8d5;"> </span>   <span style="color: #657b83; background-color: #eee8d5;"> </span>   pytest.skip(<span style="color: #2aa198;">'No Redis server found'</span>)
+</pre>
+</div>
+
+<aside class="notes">
+<ul class="org-ul">
+<li>Also mention to pass server loc via cmd
+</li>
+</ul>
+</aside>
+</section>
+</section>
+<section>
+<section id="sec-15" >
+
+<h2>Questions?</h2>
+<p>
+Thanks for listening!
+</p>
+
+<p>
+flub@devork.be
+</p>
+
+<p>
+@flubdevork
+</p>
+
+<img src="./abilisoft_small.png" alt="abilisoft_small.png" />
+</section>
+</section>
+</div>
+</div>
+
+<script src="./reveal.js/lib/js/head.min.js"></script>
+<script src="./reveal.js/js/reveal.min.js"></script>
+
+<script>
+// Full list of configuration options available here:
+// https://github.com/hakimel/reveal.js#configuration
+Reveal.initialize({
+
+controls: true,
+progress: true,
+history: false,
+center: true,
+slideNumber: true,
+rollingLinks: false,
+keyboard: true,
+overview: true,
+
+theme: Reveal.getQueryHash().theme, // available themes are in /css/theme
+transition: Reveal.getQueryHash().transition || 'default', // default/cube/page/concave/zoom/linear/fade/none
+transitionSpeed: 'default',
+
+// Optional libraries used to extend on reveal.js
+dependencies: [
+ { src: './reveal.js/plugin/highlight/highlight.js', async: true, callback: function() { hljs.initHighlightingOnLoad(); } }
+]
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,416 @@
+#+Title: Advanced py.test Fixtures
+#+Author: Floris Bruynooghe
+#+Email: flub@devork.be
+#+EPRESENT_FRAME_LEVEL: 1
+#+OPTIONS: toc:nil num:nil reveal_center:t
+#+REVEAL_HLEVEL: 1
+#+REVEAL_PLUGINS: (highlight)
+#+REVEAL_THEME: solarized
+#+REVEAL_ROOT: ./reveal.js
+
+
+* Introduction
+
+Fixtures are powerful:
+- Dependency Injection
+- Isolated
+- Composable
+
+Assume you know:
+- py.test
+- basic fixtures
+
+#+BEGIN_NOTES
+- Been using and contributing to py.test for a few years
+- Use at own risk
+- Some patterns we use in ~70k source
+- Some from pytest-django
+- Some made up stuff
+#+END_NOTES
+
+* The Basics
+
+You should know this:
+
+#+BEGIN_SRC python
+  import pytest
+  
+  @pytest.fixture
+  def foo():
+      return 42
+  
+  def test_foo(foo):
+      assert foo == 42
+  
+   class TestBar:
+  
+      @pytest.fixture
+      def bar(self, request):
+          def fin():
+              print('Teardown of fixture bar')
+          request.addfinalizer(fin)
+          return 7
+  
+      def test_bar(self, foo, bar):
+          assert foo != bar
+#+END_SRC
+
+#+BEGIN_NOTES
+- Dependency Injection!
+- Hope you know this
+- Andreas explained that this morning
+#+END_NOTES
+
+* Caching fixtures
+
+Fixture decorator has scope argument:
+
+#+BEGIN_SRC python
+  @pytest.fixture(scope='session')
+  def foo(request):
+      print('session setup')
+      def fin():
+          print('session finalizer')
+      request.addfinalizer(fin)
+      return f
+  
+  @pytest.fixture(scope='function')  # default scope
+  def bar(request):
+      print('funtion setup')
+      def fin():
+          print('function finalizer')
+      request.addfinalizer(fin)
+      return b
+  
+  def test_one(foo, bar):
+      pass
+  
+  def test_two(foo, bar):
+      pass
+#+END_SRC
+
+#+BEGIN_NOTES
+- Cached on scope automatically
+#+END_NOTES
+
+** Caching Fixtures
+
+#+BEGIN_EXAMPLE
+  $ py.test test_ex.py -s
+  ========================== test session starts ==========================
+  platform linux2 -- Python 2.7.6 -- py-1.4.20 -- pytest-2.5.2
+  plugins: timeout, capturelog, xdist
+  collected 2 items 
+  
+  test_ex.py session setup
+  funtion setup
+  .function finalizer
+  function setup
+  .function finalizer
+  session finalizer
+
+  ======================= 2 passed in 0.07 seconds ========================
+  
+  Process *pytest* finished
+#+END_EXAMPLE
+
+Available scopes: function, class, module, session
+
+#+BEGIN_NOTES
+- session only setup once
+- fuction twice
+- ~-s~ does not capture stdout
+- Scopes: function, class, module, session
+#+END_NOTES
+
+* Interdependent fixtures
+
+Fixture can use fixtures too:
+
+#+BEGIN_SRC python
+  @pytest.fixture(scope='session')
+  def db_conn():
+      return create_db_conn()
+  
+  @pytest.fixture(scope='module')
+  def db_table(request, db_conn):
+      table = create_table(db_conn, 'foo')
+      def fin():
+          drop_table(db_conn, table)
+      request.addfinalizer(fin)
+      return table
+  
+  def test_bar(db_table):
+      pass
+#+END_SRC
+
+#+BEGIN_NOTES
+- Fixtures can depend on each other
+- Functional test example
+- Request is just a built-in fixture
+#+END_NOTES
+
+* Skip/fail in fixture
+
+Fixtures can trigger skipping/failing of all dependent tests:
+
+#+BEGIN_SRC python
+  @pytest.fixture(scope='session')
+  def redis_client():
+      servers = ['localhost', 'venera.clockhouse']
+      for hostname in servers:
+          try:
+              return redis.StrictRedis(hostname)
+          except redis.ConnectionError:
+              continue
+      else:
+          pytest.skip('No Redis server found')
+#+END_SRC
+
+#+BEGIN_NOTES
+- In 2.6 this will respect scope
+- also pytest.fail()
+- .fail() and .skip() just raise an exception
+#+END_NOTES
+
+* Marks
+
+Rember tests can be marked:
+
+#+BEGIN_SRC python
+  @pytest.mark.mymarker
+  @pytest.mark.other_marker
+  def test_something():
+      pass
+#+END_SRC
+
+Run tests based on markers:
+
+#+BEGIN_EXAMPLE
+  $ py.test -m "not mymarker"
+#+END_EXAMPLE
+
+Make them strict:
+
+#+BEGIN_EXAMPLE
+  # pytest.ini
+  [pytest]
+  addopts = --strict
+  markers =
+      mymarker: a custom marker
+#+END_EXAMPLE
+
+#+BEGIN_NOTES
+- mark a test
+- run test from command line
+- Can use ~--strict~ and 
+#+END_NOTES
+
+* Using Marks from Fixtures
+  
+#+BEGIN_SRC python
+  @pytest.fixture
+  def mongo_client(request):
+      marker = request.node.get_marker('mongo_db')
+      if not marker:
+          db = 'TestDB'
+      else:
+          def apifun(db):
+              return db
+          db = apifun(*marker.args, **marker.kwargs)
+      return pymongo.MongoClient('127.0.0.1/{}'.format(db))
+  
+  @pytest.mark.mongo_db('Users')
+  def test_something(mongo_client):
+      pass
+#+END_SRC
+
+#+BEGIN_NOTES
+- Use a mark as a parameter to a fixture
+- Maybe consider re-designing the fixture
+- apifun current hack to get python argument parsing
+#+END_NOTES
+
+* Autouse fixtues
+
+Setup/teardown without explicit request:
+
+#+BEGIN_SRC python
+  @pytest.mark.linux
+  def test_mem_stack():
+      assert MemSizes().stack == 42
+  
+  @pytest.fixture(autouse=True)
+  def _platform_skip(request):
+      marker = request.node.get_marker('linux')
+      if marker and platform.system() != 'Linux':
+          pytest.skip('N/A on {}'.format(platform.system()))
+#+END_SRC
+
+#+BEGIN_NOTES
+- An autouse fixture to detect the mark
+- Autouse fixture invoked before each test
+- ~node.keywords~
+- Autouse also useful without marks
+#+END_NOTES
+
+* Parametrising fixtures
+
+- Individual fixtures can be paremeterised
+- Multiple parameterised fixtures combine
+
+#+BEGIN_SRC python
+  @pytest.fixture(params=['ora', 'pg', 'sqlite'])
+  def dburi(request):
+      return create_db_uri(request.param)
+  
+  @pytest.fixture(params=['ipv4', 'ipv6'])
+  def addr_family(request):
+      return socket.AF_INET if request.param == 'ipv4' else socket.AF_INET6
+  
+  def test_txn(dburi):
+      inst = MyObj(dburi)
+      assert inst.transaction_works()
+  
+  def test_conn(dburi, addr_family):
+      inst = MyObj(dburi, addr_family)
+      assert inst.it_works()
+#+END_SRC
+
+#+BEGIN_NOTES
+- Powerful, combinatory
+- Functional test example
+- This will execute 6 versions of test_func
+#+END_NOTES
+
+* Skipping Parameters
+
+Skipping can be done on a parameter level:
+
+#+BEGIN_SRC python
+  try:
+      import cx_Oracle as ora
+  except ImportError:
+      ora = None
+  
+  needs_ora = pytest.mark.skipif(ora is None, reason='No Oracle installed')
+  
+  @pytest.fixture(params=[
+      'pg',
+      needs_ora('ora'),
+  ])
+  def dburi(request):
+      return create_db_uri(request.param)
+#+END_SRC
+
+#+BEGIN_NOTES
+- Marks can be assigned to vars
+#+END_NOTES
+
+* Accessing Fixture Info
+
+Find out what other fixtures are requested:
+
+#+BEGIN_SRC python
+  @pytest.fixture
+  def db(request):
+      if 'transactional_db' in request.fixturenames:
+          pytest.fail('Conflicting fixtures')
+      return no_transactions_db()
+  
+  @pytest.fixture
+  def transactional_db(request):
+      if 'db' in request.fixturenames:
+          pytest.fail('Conflicting fixtures')
+      return transactional_db()
+#+END_SRC
+
+#+BEGIN_NOTES
+- Mutual exclusive fixture
+#+END_NOTES
+
+* Plugins and Hooks
+
+#+BEGIN_EXAMPLE
+  myproj/
+    +- myproj/
+    |   +- __init__.py
+    |   +- models.py
+    +- tests/
+        +- contest.py
+        +- test_models.py
+#+END_EXAMPLE
+
+A few common hooks:
+- ~pytest_namespace()~
+- ~pytest_addoption(parser)~
+- ~pytest_ignore_collect(path, config)~
+- ~pytest_sessionstart(session)~
+- ~pytest_sessionfinish(session, exitstatus)~
+- ~pytest_assertrepr_compare(config, op, left, right)~
+
+See hookspec for full list
+
+#+BEGIN_NOTES
+- ~conftest.py~ is a plugin
+- For advanced test suites you end up writing your own plugin.
+- Source in hookspec.py or in docs
+- Arguments are optional
+#+END_NOTES
+
+* Using commandline options
+
+New options an be accessed from fixtures and tests:
+
+#+BEGIN_SRC python
+  #conftest.py
+  def pytest_addoption(parser):
+      parser.addoption('--ci', action='store_true',
+                       help='Indicate tests are run on CI server')
+  
+  @pytest.fixture
+  def fix(request):
+      ci = request.config.getoption('ci')
+  
+  # Test module
+  def test_foo(pytestconfig):
+      ci = pytestconfig.getoption('ci')
+#+END_SRC
+
+#+BEGIN_NOTES
+- You can add your own command line options
+#+END_NOTES
+
+* skip-or-fail
+
+Skipping not allowed on CI server:
+
+#+BEGIN_SRC python
+  @pytest.fixture(scope='session')
+  def redis_client(request):
+      servers = ['localhost', 'venera.clockhouse']
+      for hostname in servers:
+          try:
+              return redis.StrictRedis(hostname)
+          except redis.ConnectionError:
+              continue
+      else:
+          if request.config.getoption('ci'):
+              pytest.fail('No Redis server found')
+          else:
+              pytest.skip('No Redis server found')
+#+END_SRC
+
+#+BEGIN_NOTES
+- Also mention to pass server loc via cmd
+#+END_NOTES
+
+* Questions?
+
+Thanks for listening!
+
+flub@devork.be
+
+@flubdevork
+
+[[./abilisoft_small.png]]
