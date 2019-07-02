@@ -1,3 +1,9 @@
 ipython[notebook]
 RISE
 nbextensions
+jupyter_contrib_nbextensions
+pytest
+jupyter_nbextensions_configurator
+redis
+
+# jupyter nbextensions_configurator enable --user

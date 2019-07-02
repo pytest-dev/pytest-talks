@@ -1,0 +1,7 @@
+.ipynb_checkpoints/
+
+# from the advanced fixtures talk
+__pycache__/
+pytest.ini
+combinatoric_parameters.py
+test_*.py
