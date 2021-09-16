@@ -16,36 +16,32 @@
 
 <div class="slides">
 
-<section>
-<section data-markdown>
+<section 
+  data-markdown 
+  data-separator="^\r?\n---\r?\n$"
+  data-separator-vertical="^\r?\n-----\r?\n$"
+  data-separator-notes="^Note:">
+<script type="text/template">
+
 
 Pytest Intro
 ------------
 - [Floris Bruynooghe](mailto:flub@devork.be) - bulk content
 - [Ronny Pfannschmidt](mailto:opensource@ronnypfannschmidt.de) - retouch
 
+-----
 
-</section>
-<section data-markdown>
+where to get/contribute
+------------------------
 
-Overview
---------- 
+![pytest logo](./pytest1.png)
 
-* ![pytest logo](./pytest1.png)
 * http://pytest.org
 * http://github.com/pytest-dev/pytest
 
 
-<aside class="notes" data-markdown>
-  - py.test vs pytest
-  - Been around very long
-    - transformed quite a bit
-</aside>
-</section>
-</section>
+---
 
-<section>
-<section data-markdown>
 
 ## introduction
 ### basic features
@@ -56,8 +52,9 @@ Overview
 - nice exception formatting
 - output capture
 - runs unittest tests too
-</section>
-<section data-markdown>
+
+-----
+
 ##introduction
 ### really nice features
 - parametrisation
@@ -66,10 +63,9 @@ Overview
 - xdist
 - plugins
 
-</section>
-</section>
-<section>
-<section data-markdown>
+
+---
+
 ## Simple Tests
 ### code
 ```python
@@ -86,9 +82,10 @@ class TestFloats:
     def test_e(self):
         assert float('3.1e3') == 3100.0
 ```
-</section>
 
-<section data-markdown>
+-----
+
+
 ## Simple Tests
 ### output
 
@@ -103,10 +100,9 @@ test.py ...
 
 ====================== 3 passed in 0.01 seconds =======================
 ```
-</section>
-</section>
 
-<section data-markdown>
+---
+
 ## Detailed Failure Reports
 
 ```python
@@ -139,8 +135,9 @@ test.py:2: AssertionError
 ====================== 1 failed in 0.01 seconds =======================
 ```
 
-</section>
-<section data-markdown>
+---
+
+
 ## Assertions
 
 ```python
@@ -155,40 +152,45 @@ def test_assertions():
   assert 'fox' in s
 ```
 
-</section>
-<section>
-<h2>Expected Exceptions</h2>
-<pre><code>
+---
 
-  import pytest
+## Expected Exceptions
 
-  def divide(x, y):
-      return x / y
+```python
 
-  def test_raises():
-      with pytest.raises(ZeroDivisionError):
-          divide(3, 0)
+import pytest
 
-  def test_exc_args():
-      with pytest.raises(Exception) as exc:
-          raise Exception(42, 'msg')
-      assert exc.value.args = (42, 'msg')
-      assert exc.type is Exception
-      assert exc.tb
-</code></pre>
-</section>
-<section>
-<h2>Output Capture</h2>
+def divide(x, y):
+    return x / y
 
-<pre><code class=python>
+def test_raises():
+    with pytest.raises(ZeroDivisionError):
+        divide(3, 0)
+
+def test_exc_args():
+    with pytest.raises(Exception) as exc:
+        raise Exception(42, 'msg')
+    assert exc.value.args = (42, 'msg')
+    assert exc.type is Exception
+    assert exc.tb
+```
+
+---
+
+## Output Capture
+
+```python
+
   def func(a):
       print('input was: {!r}'.format(a))
       return a + 42
 
   def test_func():
       assert func(5) < 5
-</code></pre>
-<pre><code>
+```
+
+```
+
   $ py.test
   ========================= test session starts =========================
   platform linux -- Python 3.4.3, pytest-2.8.0, py-1.4.30, pluggy-0.3.1
@@ -209,11 +211,10 @@ def test_assertions():
   -------------------------- Captured stdout call -----------------------
   input was: 5
   ======================== 1 failed in 0.05 seconds =====================
-</code></pre>
-</section>
-<section data-markdown>
-Common Options
---------------
+
+---
+
+## Common Options
 
 - `-s` disable output capture
 - `-x` exit on first failure
@@ -223,10 +224,11 @@ Common Options
 - `-rsxXw` `-ra` report skipped, xfailed, ...
 - defaults in `pytest.ini`
 
-</section>
-<section>
-<h2>showlocals</h2>
-<pre><code>
+---
+
+## showlocals
+
+```python
   $ py.test -ql
   F
   ========================== FAILURES ===========================
@@ -253,20 +255,21 @@ Common Options
   c          = 12
 
   test_ex.py:5: ZeroDivisionError
-</code></pre>
+```
 
-</section>
-<section>
-<h2>Selecting Tests</h2>
+---
 
-<pre><code>
+
+## Selecting Tests
+
+```
   def test_foo():
       assert True
 
   def test_bar():
       assert True
-</code></pre>
-<pre><code>
+```
+```
   $ py.test -v -k foo
   ===================== test session starts =====================
   platform linux -- Python 3.4.3, pytest-2.8.0, py-1.4.30, pluggy
@@ -278,10 +281,10 @@ Common Options
 
   ================ 1 tests deselected by '-kfoo' ================
   =========== 1 passed, 1 deselected in 0.12 seconds ============
-</code></pre>
-</section>
+```
 
-<section data-markdown>
+---
+
 ## Skipping, xfail & marks
 
 ```python
@@ -305,7 +308,9 @@ def test_foo():
 - Marks also useful in plugins
 </section>
 
-<section data-markdown>
+---
+
+
 ## Output
 
 ```
@@ -322,17 +327,21 @@ def test_foo():
 
   ======= 1 passed, 1 skipped, 1 xfailed in 0.07 seconds ========
 ```
-</section>
 
-<section>
-<h2>Fixtures</h2>
+---
 
-<section data-markdown>
+## Fixtures
+### about
+
+
 - Dependency injection
 - Isolation
 - (`.setUp()` `.tearDown()`)
-</section>
-<section data-markdown>
+
+
+-----
+
+## Fixtures
 ### basic usage
 
 ```python
@@ -346,9 +355,9 @@ def test_value(somevalue):
     assert somevalue == 42
 ```
 
-</section>
-</section>
-<section data-markdown>
+----- 
+
+##Fixtures
 ### finalization
 
 ```python
@@ -363,14 +372,12 @@ def db(request):
 def test_something_with_db(db):
     assert func(db)
 ```
-</section>
-</section>
 
-<section>
-<h2>Builtin fixture</h2>
+---
 
-<section data-markdown>
+## Builtin fixture
 ### tmp_path
+
 ```python
 from pathlib import path
 
@@ -383,8 +390,11 @@ def test_output(tmp_path: Path):
     write(str(out_txt))
     assert out_txt.read() == 'hello world'
 ```
-</section>
-<section data-markdown>
+
+-----
+
+
+## Builtin fixture
 ### monkeypatch
 
 ```python
@@ -398,9 +408,11 @@ def test_platform_win(monkeypatch):
 def test_platform():
     assert sys.platform == 'posix'
 ```
-</section>
-</section>
-<section data-markdown>
+
+
+
+---
+
 More
 ----
 
@@ -412,12 +424,13 @@ More
   - command line options
   - extra config setup
 
+---
 
-</section>
-<section data-markdown>
+
 Questions?
 ----------
 
+</script>
 </section>
 
 </div>
