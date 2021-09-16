@@ -2,12 +2,12 @@
 <html>
 <head>
 	<meta charset="utf-8"/>
-	<link rel="stylesheet" href="../assets/reveal.js/css/reveal.css">
-	<link rel="stylesheet" href="../assets/reveal.js/css/theme/white.css">
+	<link rel="stylesheet" href="../assets/reveal.js/dist/reveal.css">
+	<link rel="stylesheet" href="../assets/reveal.js/dist/theme/white.css">
 
 
 		<!-- Theme used for syntax highlighting of code -->
-		<link rel="stylesheet" href="../assets/reveal.js/lib/css/zenburn.css">
+		<link rel="stylesheet" href="../assets/reveal.js/plugin/highlight/zenburn.css">
 
 	<title>Pytest Intro</title>
 </head>
@@ -46,7 +46,8 @@ Overview
 
 <section>
 <section data-markdown>
-##introduction
+
+## introduction
 ### basic features
 
 - no-boilerplate test
@@ -421,23 +422,14 @@ Questions?
 
 </div>
 </div>
-<script src="../assets/reveal.js/js/reveal.js"></script>
-<script src="../assets/reveal.js/lib/js/head.min.js"></script>
+<script src="../assets/reveal.js/dist/reveal.js"></script>
+<script src="../assets/reveal.js/plugin/markdown/markdown.js"></script>
+<script src="../assets/reveal.js/plugin/highlight/highlight.js"></script>
 <script>
 	Reveal.initialize({
-	history: true,
-	dependencies: [
-		// Interpret Markdown in <section> elements
-		{ src: '../assets/reveal.js/plugin/markdown/marked.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
-		{ src: '../assets/reveal.js/plugin/markdown/markdown.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
-		// Syntax highlight for <code> elements
-		{ src: '../assets/reveal.js/plugin/highlight/highlight.js', async: true, callback: function() { hljs.initHighlightingOnLoad(); } },
-
-		{ src: '../assets/reveal.js/plugin/notes/notes.js', async: true },
-
-
-
-	]});
+    history: true,
+    plugins: [ RevealMarkdown, RevealHighlight ]
+  });
 </script>
 </body>
 </html>
