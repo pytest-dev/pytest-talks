@@ -17,7 +17,7 @@
 <div class="slides">
 
 
-<section data-markdown>
+<section data-markdown id=title>
 
 Pytest Intro
 ------------
@@ -26,7 +26,7 @@ Pytest Intro
 
 
 </section>
-<section data-markdown>
+<section data-markdown id=overview>
 
 Overview
 --------- 
@@ -38,7 +38,6 @@ Overview
 </section>
 <aside class="notes" data-markdown>
   - py.test vs pytest
-  - Do not get confused with pylint/logilab-common!
   - Been around very long
     - transformed quite a bit
 </aside>
@@ -61,75 +60,81 @@ Introduction
 - runs unittest & nose tests too
 
 </section>
+
 <section>
-<h2>Simple Tests</h2>
-<pre><code class="python">
-  def test_int_casting():
-      assert int('5') == 5
+<section data-markdown>
+## Simple Tests
+```python
+
+def test_int_casting():
+    assert int('5') == 5
 
 
-  class TestFloats:
+class TestFloats:
 
-      def test_dot(self):
-          assert float('3.3') == 3.3
+    def test_dot(self):
+        assert float('3.3') == 3.3
 
-      def test_e(self):
-          assert float('3.1e3') == 3100.0
-</code></pre>
+    def test_e(self):
+        assert float('3.1e3') == 3100.0
+```
 </section>
 
-<section>
-<h2>output</h2>
-<pre><code>
-  $ py.test
-  ========================= test session starts =========================
-  platform linux -- Python 3.4.3, pytest-2.8.0, py-1.4.30, pluggy-0.3.1
-  rootdir: /tmp/sandbox, inifile:
-  collected 3 items
+<section data-markdown>
 
-  test.py ...
+## output
 
-  ====================== 3 passed in 0.01 seconds =======================
-</code></pre>
+```text
+$ py.test
+========================= test session starts =========================
+platform linux -- Python 3.4.3, pytest-2.8.0, py-1.4.30, pluggy-0.3.1
+rootdir: /tmp/sandbox, inifile:
+collected 3 items
+
+test.py ...
+
+====================== 3 passed in 0.01 seconds =======================
+```
+</section>
 </section>
 
-<section>
-<h2>Detailed Failure Reports</h2>
+<section data-markdown>
+## Detailed Failure Reports
 
-<pre><code>
+```python
 
   def test_wrong():
       assert 'Some test about spam' == 'Some blurb about ham'
-</code></pre>
-<pre><code>
+```
 
-  $ py.test -q
-  ========================= test session starts =========================
-  platform linux -- Python 3.4.3, pytest-2.8.0, py-1.4.30, pluggy-0.3.1
-  rootdir: /tmp/sandbox, inifile:
-  collected 1 items
+```
+$ py.test -q
+========================= test session starts =========================
+platform linux -- Python 3.4.3, pytest-2.8.0, py-1.4.30, pluggy-0.3.1
+rootdir: /tmp/sandbox, inifile:
+collected 1 items
 
-  test_ex.py F
+test_ex.py F
 
-  ============================== FAILURES ===============================
-  _____________________________ test_wrong ______________________________
+============================== FAILURES ===============================
+_____________________________ test_wrong ______________________________
 
-      def test_wrong():
-  >       assert 'Some text about spam' == 'Some text about ham'
-  E       assert 'Some text about spam' == 'Some text about ham'
-  E         - Some text about spam
-  E         ?                 ^^
-  E         + Some text about ham
-  E         ?                 ^
+    def test_wrong():
+>       assert 'Some text about spam' == 'Some text about ham'
+E       assert 'Some text about spam' == 'Some text about ham'
+E         - Some text about spam
+E         ?                 ^^
+E         + Some text about ham
+E         ?                 ^
 
-  test.py:2: AssertionError
-  ====================== 1 failed in 0.01 seconds =======================
+test.py:2: AssertionError
+====================== 1 failed in 0.01 seconds =======================
+```
 
-</code></pre>
 </section>
-<section>
-<h2>Assertions</h2>
-<pre><code>
+<section data-markdown>
+## Assertions
+```python
 def test_assertions():
   x = y = 0
   assert x
@@ -139,7 +144,7 @@ def test_assertions():
   assert 3 < x < 5 and y < 5
   s = 'the quick fox ...'
   assert 'fox' in s
-</code></pre>
+```
 </section>
 <section>
 <h2>Expected Exceptions</h2>
