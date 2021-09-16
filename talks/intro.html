@@ -16,8 +16,8 @@
 
 <div class="slides">
 
-
-<section data-markdown id=title>
+<section>
+<section data-markdown>
 
 Pytest Intro
 ------------
@@ -26,7 +26,7 @@ Pytest Intro
 
 
 </section>
-<section data-markdown id=overview>
+<section data-markdown>
 
 Overview
 --------- 
@@ -35,35 +35,42 @@ Overview
 * http://pytest.org
 * http://github.com/pytest-dev/pytest
 
-</section>
+
 <aside class="notes" data-markdown>
   - py.test vs pytest
   - Been around very long
     - transformed quite a bit
 </aside>
-
-
-<section data-markdown>
-Introduction
-------------
-
-- no-boilerplate test
-- discovery
-- plain assert
-- nice exception formatting
-- pdb integration
-- output capture
-- parametrisation
-- markers
-- xdist
-- plugins
-- runs unittest & nose tests too
-
+</section>
 </section>
 
 <section>
 <section data-markdown>
+##introduction
+### basic features
+
+- no-boilerplate test
+- test discovery
+- plain assert
+- nice exception formatting
+- output capture
+- runs unittest tests too
+</section>
+<section data-markdown>
+##introduction
+### really nice features
+- parametrisation
+- markers
+- pdb integration
+- xdist
+- plugins
+
+</section>
+</section>
+<section>
+<section data-markdown>
 ## Simple Tests
+### code
 ```python
 
 def test_int_casting():
@@ -81,8 +88,8 @@ class TestFloats:
 </section>
 
 <section data-markdown>
-
-## output
+## Simple Tests
+### output
 
 ```text
 $ py.test
@@ -134,6 +141,7 @@ test.py:2: AssertionError
 </section>
 <section data-markdown>
 ## Assertions
+
 ```python
 def test_assertions():
   x = y = 0
@@ -145,6 +153,7 @@ def test_assertions():
   s = 'the quick fox ...'
   assert 'fox' in s
 ```
+
 </section>
 <section>
 <h2>Expected Exceptions</h2>
@@ -200,11 +209,6 @@ def test_assertions():
   input was: 5
   ======================== 1 failed in 0.05 seconds =====================
 </code></pre>
-<!--..
-  #+BEGIN_NOTES
-  - can be disabled using ~-s~
-  #+END_NOTES
--->
 </section>
 <section data-markdown>
 Common Options
@@ -276,9 +280,11 @@ Common Options
 </code></pre>
 </section>
 
-<section>
-<h2>Skipping, xfail & marks</h2>
-<pre><code>import os, pytest
+<section data-markdown>
+## Skipping, xfail & marks
+
+```python
+import os, pytest
 
 @pytest.mark.skipif(os.name != 'posix', reason='Not supported')
 def test_pipe():
@@ -292,15 +298,16 @@ def test_oops():
 @pytest.mark.mymark
 def test_foo():
   assert 1</code></pre>
-<p data-markdown>
+```
+
 - Select tests by mark: `-m 'not mymark'`
 - Marks also useful in plugins
-</p>
 </section>
-<section>
-<h2>Output</h2>
 
-<pre><code>
+<section data-markdown>
+## Output
+
+```
    py.test -ra
   ===================== test session starts =====================
   platform linux -- Python 3.4.3, pytest-2.8.0, py-1.4.30, pluggy-0.3.1
@@ -313,69 +320,84 @@ def test_foo():
   XFAIL test_ex.py::test_oops
 
   ======= 1 passed, 1 skipped, 1 xfailed in 0.07 seconds ========
-</code></pre>
+```
 </section>
+
 <section>
 <h2>Fixtures</h2>
-<p data-markdown>
-- Dependecy injection
+
+<section data-markdown>
+- Dependency injection
 - Isolation
 - (`.setUp()` `.tearDown()`)
-</p>
-<pre><code>
-  import pytest
-
-  @pytest.fixture
-  def somevalue():
-      return 42
-
-  def test_value(somevalue):
-      assert somevalue == 42
-</code></pre>
 </section>
-<section>
-<h2>Fixture finalizer</h2>
+<section data-markdown>
+### basic usage
 
-<pre><code>
-  import pytest
+```python
+import pytest
 
-  @pytest.fixture
-  def db(request):
-      conn = create_conn()
-      yield conn
-      destroy_db(conn)
+@pytest.fixture
+def somevalue():
+    return 42
 
-  def test_something_with_db(db):
-      assert func(db)
-</code></pre>
+def test_value(somevalue):
+    assert somevalue == 42
+```
+
 </section>
-<section>
-<h2>Builtin fixture: tmpdir</h2>
-
-<pre><code>
-  def write(fname):
-      with open(fname, 'w') as fp:
-          fp.write('hello world')
-
-  def test_output(tmpdir):
-      out_txt = tmpdir.join('out.txt')
-      write(str(out_txt))
-      assert out_txt.read() == 'hello world'
-</code></pre>
 </section>
+<section data-markdown>
+### finalization
+
+```python
+import pytest
+
+@pytest.fixture
+def db(request):
+    conn = create_conn()
+    yield conn
+    destroy_db(conn)
+
+def test_something_with_db(db):
+    assert func(db)
+```
+</section>
+</section>
+
 <section>
-<h2>Builtin fixture: monkeypatch</h2>
+<h2>Builtin fixture</h2>
 
-<pre><code>
-  import sys
+<section data-markdown>
+### tmp_path
+```python
+from pathlib import path
 
-  def test_platform_win(monkeypatch):
-      monkeypatch.setattr(sys, 'platform', 'win32')
-      assert sys.platform == 'win32'
+def write(fname):
+    with open(fname, 'w') as fp:
+        fp.write('hello world')
 
-  def test_platform():
-      assert sys.platform == 'posix'
-</code></pre>
+def test_output(tmp_path: Path):
+    out_txt = tmp_path / "out.txt"
+    write(str(out_txt))
+    assert out_txt.read() == 'hello world'
+```
+</section>
+<section data-markdown>
+### monkeypatch
+
+```python
+
+import sys
+
+def test_platform_win(monkeypatch):
+    monkeypatch.setattr(sys, 'platform', 'win32')
+    assert sys.platform == 'win32'
+
+def test_platform():
+    assert sys.platform == 'posix'
+```
+</section>
 </section>
 <section data-markdown>
 More
