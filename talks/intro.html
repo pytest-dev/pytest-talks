@@ -9,6 +9,12 @@
 		<!-- Theme used for syntax highlighting of code -->
 		<link rel="stylesheet" href="../assets/reveal.js/plugin/highlight/zenburn.css">
 
+
+  <style type="text/css">
+  :root {
+    --r-heading-text-transform: none;
+  }
+  </style>
 	<title>Pytest Intro</title>
 </head>
 <body>
@@ -18,10 +24,10 @@
 
 <section 
   data-markdown 
-  data-separator="^\r?\n---\r?\n$"
-  data-separator-vertical="^\r?\n-----\r?\n$"
+  data-separator="^\r?\n-----\r?\n$"
+  data-separator-vertical="^\r?\n---\r?\n$"
   data-separator-notes="^Note:">
-<script type="text/template">
+<textarea data-template>
 
 
 Pytest Intro
@@ -29,7 +35,7 @@ Pytest Intro
 - [Floris Bruynooghe](mailto:flub@devork.be) - bulk content
 - [Ronny Pfannschmidt](mailto:opensource@ronnypfannschmidt.de) - retouch
 
------
+---
 
 where to get/contribute
 ------------------------
@@ -40,7 +46,7 @@ where to get/contribute
 * http://github.com/pytest-dev/pytest
 
 
----
+-----
 
 
 ## introduction
@@ -53,7 +59,7 @@ where to get/contribute
 - output capture
 - runs unittest tests too
 
------
+---
 
 ##introduction
 ### really nice features
@@ -64,10 +70,11 @@ where to get/contribute
 - plugins
 
 
----
+-----
 
 ## Simple Tests
 ### code
+
 ```python
 
 def test_int_casting():
@@ -83,7 +90,7 @@ class TestFloats:
         assert float('3.1e3') == 3100.0
 ```
 
------
+---
 
 
 ## Simple Tests
@@ -101,15 +108,21 @@ test.py ...
 ====================== 3 passed in 0.01 seconds =======================
 ```
 
----
+-----
 
 ## Detailed Failure Reports
-
+### code
 ```python
 
   def test_wrong():
       assert 'Some test about spam' == 'Some blurb about ham'
 ```
+
+---
+
+
+## Detailed Failure Reports
+### output
 
 ```
 $ py.test -q
@@ -135,10 +148,11 @@ test.py:2: AssertionError
 ====================== 1 failed in 0.01 seconds =======================
 ```
 
----
+-----
 
 
 ## Assertions
+## code
 
 ```python
 def test_assertions():
@@ -154,6 +168,11 @@ def test_assertions():
 
 ---
 
+
+## Detailed Failure Reports
+### output
+
+-----
 ## Expected Exceptions
 
 ```python
@@ -391,7 +410,7 @@ def test_output(tmp_path: Path):
     assert out_txt.read() == 'hello world'
 ```
 
------
+---
 
 
 ## Builtin fixture
@@ -411,7 +430,7 @@ def test_platform():
 
 
 
----
+-----
 
 More
 ----
@@ -429,7 +448,7 @@ More
 
 Questions?
 ----------
-
+</textarea>
 </script>
 </section>
 
@@ -441,6 +460,7 @@ Questions?
 <script>
 	Reveal.initialize({
     history: true,
+    slideNumber: "h.v c/t",
     plugins: [ RevealMarkdown, RevealHighlight ]
   });
 </script>
