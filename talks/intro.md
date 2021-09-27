@@ -30,13 +30,13 @@ where to get/contribute
 - no-boilerplate test
 - test discovery
 - plain assert
-- nice exception formatting
+- lovely exception formatting
 - output capture
 - runs unittest tests too
 
 ---
 
-##introduction
+## introduction
 ### really nice features
 - parametrisation
 - markers
