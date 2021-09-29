@@ -51,7 +51,7 @@ where to get/contribute
 ### code
 
 ```python
-
+# content of simple_tests.py
 def test_int_casting():
     assert int('5') == 5
 
@@ -72,15 +72,15 @@ class TestFloats:
 ### output
 
 ```text
-$ py.test
-========================= test session starts =========================
-platform linux -- Python 3.4.3, pytest-2.8.0, py-1.4.30, pluggy-0.3.1
-rootdir: /tmp/sandbox, inifile:
-collected 3 items
+$ pytest simple_tests.py 
+============================= test session starts ==============================
+platform linux -- Python 3.9.7, pytest-6.2.5, py-1.10.0, pluggy-1.0.0
+rootdir: /home/ronny/Projects/pytest-dev/pytest-talks/talks, configfile: pytest.ini
+collected 3 items                                                              
 
-test.py ...
+simple_tests.py ...                                                      [100%]
 
-====================== 3 passed in 0.01 seconds =======================
+============================== 3 passed in 0.00s ===============================
 ```
 
 -----
@@ -88,9 +88,9 @@ test.py ...
 ## Detailed Failure Reports
 ### code
 ```python
-
-  def test_wrong():
-      assert 'Some test about spam' == 'Some blurb about ham'
+# content of test_failure_report.py
+def test_wrong():
+    assert 'Some test about spam' == 'Some blurb about ham'
 ```
 
 ---
@@ -100,27 +100,21 @@ test.py ...
 ### output
 
 ```
-$ py.test -q
-========================= test session starts =========================
-platform linux -- Python 3.4.3, pytest-2.8.0, py-1.4.30, pluggy-0.3.1
-rootdir: /tmp/sandbox, inifile:
-collected 1 items
-
-test_ex.py F
-
-============================== FAILURES ===============================
-_____________________________ test_wrong ______________________________
+$ pytest -q test_failure_report.py 
+F                                          [100%]
+==================== FAILURES ====================
+___________________ test_wrong ___________________
 
     def test_wrong():
->       assert 'Some text about spam' == 'Some text about ham'
-E       assert 'Some text about spam' == 'Some text about ham'
-E         - Some text about spam
-E         ?                 ^^
-E         + Some text about ham
-E         ?                 ^
+>       assert 'Some test about spam' == 'Some blurb about ham'
+E       AssertionError: assert 'Some test about spam' == 'Some blurb about ham'
+E         - Some blurb about ham
+E         + Some test about spam
 
-test.py:2: AssertionError
-====================== 1 failed in 0.01 seconds =======================
+test_failure_report.py:2: AssertionError
+============ short test summary info =============
+FAILED test_failure_report.py::test_wrong - Ass...
+1 failed in 0.01s
 ```
 
 -----
@@ -130,6 +124,7 @@ test.py:2: AssertionError
 ## code
 
 ```python
+# content of test_assertions.py
 def test_assertions():
   x = y = 0
   assert x
@@ -149,14 +144,34 @@ def test_assertions():
 ### output
 
 ```
-MISSING
+$ pytest test_assertions.py 
+============== test session starts ===============
+platform linux -- Python 3.9.7, pytest-6.2.5, py-1.10.0, pluggy-1.0.0
+rootdir: /home/ronny/Projects/pytest-dev/pytest-talks/talks, configfile: pytest.ini
+collected 1 item                                 
+
+test_assertions.py F                       [100%]
+
+==================== FAILURES ====================
+________________ test_assertions _________________
+
+    def test_assertions():
+      x = y = 0
+>     assert x
+E     assert 0
+
+test_assertions.py:3: AssertionError
+============ short test summary info =============
+FAILED test_assertions.py::test_assertions - as...
+=============== 1 failed in 0.01s ================
 ```
 
 -----
 ## Expected Exceptions
 ### code
-```python
 
+```python
+# content of test_expected_exceptions.py
 import pytest
 
 def divide(x, y):
@@ -169,7 +184,7 @@ def test_raises():
 def test_exc_args():
     with pytest.raises(Exception) as exc:
         raise Exception(42, 'msg')
-    assert exc.value.args = (42, 'msg')
+    assert exc.value.args == (42, 'msg')
     assert exc.type is Exception
     assert exc.tb
 ```
@@ -180,7 +195,15 @@ def test_exc_args():
 
 
 ```
-MISSING
+$ pytest test_expected_exceptions.py 
+============== test session starts ===============
+platform linux -- Python 3.9.7, pytest-6.2.5, py-1.10.0, pluggy-1.0.0
+rootdir: /home/ronny/Projects/pytest-dev/pytest-talks/talks, configfile: pytest.ini
+collected 2 items                                
+
+test_expected_exceptions.py ..             [100%]
+
+=============== 2 passed in 0.00s ================
 ```
 
 
