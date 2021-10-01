@@ -73,14 +73,15 @@ class TestFloats:
 
 ```text
 $ pytest simple_tests.py 
-============================= test session starts ==============================
+============== test session starts ===============
 platform linux -- Python 3.9.7, pytest-6.2.5, py-1.10.0, pluggy-1.0.0
-rootdir: /home/ronny/Projects/pytest-dev/pytest-talks/talks, configfile: pytest.ini
-collected 3 items                                                              
+cachedir: $PWD/.tox/regen/.pytest_cache
+rootdir: /path/to/example
+collected 3 items
 
-simple_tests.py ...                                                      [100%]
+simple_tests.py ...                        [100%]
 
-============================== 3 passed in 0.00s ===============================
+=============== 3 passed in 0.01s ================
 ```
 
 -----
@@ -147,8 +148,9 @@ def test_assertions():
 $ pytest test_assertions.py 
 ============== test session starts ===============
 platform linux -- Python 3.9.7, pytest-6.2.5, py-1.10.0, pluggy-1.0.0
-rootdir: /home/ronny/Projects/pytest-dev/pytest-talks/talks, configfile: pytest.ini
-collected 1 item                                 
+cachedir: $PWD/.tox/regen/.pytest_cache
+rootdir: /path/to/example
+collected 1 item
 
 test_assertions.py F                       [100%]
 
@@ -198,8 +200,9 @@ def test_exc_args():
 $ pytest test_expected_exceptions.py 
 ============== test session starts ===============
 platform linux -- Python 3.9.7, pytest-6.2.5, py-1.10.0, pluggy-1.0.0
-rootdir: /home/ronny/Projects/pytest-dev/pytest-talks/talks, configfile: pytest.ini
-collected 2 items                                
+cachedir: $PWD/.tox/regen/.pytest_cache
+rootdir: /path/to/example
+collected 2 items
 
 test_expected_exceptions.py ..             [100%]
 
@@ -211,14 +214,15 @@ test_expected_exceptions.py ..             [100%]
 
 ## Output Capture
 ### code
+
 ```python
+# content of test_output_capture.py
+def func(a):
+    print('input was: {!r}'.format(a))
+    return a + 42
 
-  def func(a):
-      print('input was: {!r}'.format(a))
-      return a + 42
-
-  def test_func():
-      assert func(5) < 5
+def test_func():
+    assert func(5) < 5
 ```
 
 ---
@@ -228,27 +232,29 @@ test_expected_exceptions.py ..             [100%]
 ### output
 
 ```
+$ py.test test_output_capture.py
+============== test session starts ===============
+platform linux -- Python 3.9.7, pytest-6.2.5, py-1.10.0, pluggy-1.0.0
+cachedir: $PWD/.tox/regen/.pytest_cache
+rootdir: /path/to/example
+collected 1 item
 
-  $ py.test
-  ========================= test session starts =========================
-  platform linux -- Python 3.4.3, pytest-2.8.0, py-1.4.30, pluggy-0.3.1
-  rootdir: /tmp/sandbox, inifile:
-  collected 1 items
+test_output_capture.py F                   [100%]
 
-  test_ex.py F
+==================== FAILURES ====================
+___________________ test_func ____________________
 
-  ============================== FAILURES ===============================
-  ______________________________ test_func ______________________________
+    def test_func():
+>       assert func(5) < 5
+E       assert 47 < 5
+E        +  where 47 = func(5)
 
-      def test_func():
-  >       assert func(5) < 5
-  E       assert 47 < 5
-  E        +  where 47 = func(5)
-
-  test_ex.py:6: AssertionError
-  -------------------------- Captured stdout call -----------------------
-  input was: 5
-  ======================== 1 failed in 0.05 seconds =====================
+test_output_capture.py:6: AssertionError
+-------------- Captured stdout call --------------
+input was: 5
+============ short test summary info =============
+FAILED test_output_capture.py::test_func - asse...
+=============== 1 failed in 0.01s ================
 ```
 
 -----
@@ -269,32 +275,46 @@ test_expected_exceptions.py ..             [100%]
 ### showlocals
 
 ```python
-  $ py.test -ql
-  F
-  ========================== FAILURES ===========================
-  __________________________ test_func __________________________
+$ py.test -ql
+F..FF                                      [100%]
+==================== FAILURES ====================
+________________ test_assertions _________________
 
-      def test_func():
-  >       func(3)
+    def test_assertions():
+      x = y = 0
+>     assert x
+E     assert 0
+
+x          = 0
+y          = 0
+
+test_assertions.py:3: AssertionError
+___________________ test_wrong ___________________
+
+    def test_wrong():
+>       assert 'Some test about spam' == 'Some blurb about ham'
+E       AssertionError: assert 'Some test about spam' == 'Some blurb about ham'
+E         - Some blurb about ham
+E         + Some test about spam
 
 
-  test_ex.py:8:
-  _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+test_failure_report.py:2: AssertionError
+___________________ test_func ____________________
 
-  b = 3
+    def test_func():
+>       assert func(5) < 5
+E       assert 47 < 5
+E        +  where 47 = func(5)
 
-      def func(b):
-          a = 1
-          a += b
-          c = a * b
-  >       return c / 0
-  E       ZeroDivisionError: division by zero
 
-  a          = 4
-  b          = 3
-  c          = 12
-
-  test_ex.py:5: ZeroDivisionError
+test_output_capture.py:6: AssertionError
+-------------- Captured stdout call --------------
+input was: 5
+============ short test summary info =============
+FAILED test_assertions.py::test_assertions - as...
+FAILED test_failure_report.py::test_wrong - Ass...
+FAILED test_output_capture.py::test_func - asse...
+3 failed, 2 passed in 0.02s
 ```
 
 ---
@@ -304,6 +324,7 @@ test_expected_exceptions.py ..             [100%]
 #### code
 
 ```python
+# content of test_select.py
 def test_foo():
     assert True
 
@@ -320,17 +341,16 @@ def test_bar():
 
 
 ```
-  $ py.test -v -k foo
-  ===================== test session starts =====================
-  platform linux -- Python 3.4.3, pytest-2.8.0, py-1.4.30, pluggy
-  cachedir: .cache
-  rootdir: /tmp/sandbox, inifile:
-  collected 2 items
+$ py.test test_select.py -v -k foo
+============== test session starts ===============
+platform linux -- Python 3.9.7, pytest-6.2.5, py-1.10.0, pluggy-1.0.0 -- $PWD/.tox/regen/bin/python
+cachedir: $PWD/.tox/regen/.pytest_cache
+rootdir: /path/to/example
+collecting ... collected 2 items / 1 deselected / 1 selected
 
-  test_ex.py::test_foo PASSED
+test_select.py::test_foo PASSED            [100%]
 
-  ================ 1 tests deselected by '-kfoo' ================
-  =========== 1 passed, 1 deselected in 0.12 seconds ============
+======== 1 passed, 1 deselected in 0.00s =========
 ```
 
 ---
@@ -338,6 +358,7 @@ def test_bar():
 ## Skipping, xfail & marks
 
 ```python
+# content of test_skip.py
 import os, pytest
 
 @pytest.mark.skipif(os.name != 'posix', reason='Not supported')
@@ -351,12 +372,18 @@ def test_oops():
 
 @pytest.mark.mymark
 def test_foo():
-  assert 1</code></pre>
+  assert 1
 ```
 
 Note:
 - Select tests by mark: `-m 'not mymark'`
  - Marks also useful in plugins
+
+```
+# content of pytest.ini
+[pytest]
+markers = mymark    
+```
 
 ---
 
@@ -364,18 +391,18 @@ Note:
 ## Output
 
 ```
-   py.test -ra
-  ===================== test session starts =====================
-  platform linux -- Python 3.4.3, pytest-2.8.0, py-1.4.30, pluggy-0.3.1
-  rootdir: /tmp/sandbox, inifile:
-  collected 3 items
+$ py.test -ra test_skip.py
+============== test session starts ===============
+platform linux -- Python 3.9.7, pytest-6.2.5, py-1.10.0, pluggy-1.0.0
+cachedir: $PWD/.tox/regen/.pytest_cache
+rootdir: /path/to/example, configfile: pytest.ini
+collected 3 items
 
-  test_ex.py sx.
-  =================== short test summary info ===================
-  SKIP [1] test_ex.py:2: Not supported
-  XFAIL test_ex.py::test_oops
+test_skip.py .x.                           [100%]
 
-  ======= 1 passed, 1 skipped, 1 xfailed in 0.07 seconds ========
+============ short test summary info =============
+XFAIL test_skip.py::test_oops
+========== 2 passed, 1 xfailed in 0.01s ==========
 ```
 
 -----
@@ -429,7 +456,7 @@ def test_something_with_db(db):
 ### tmp_path
 
 ```python
-from pathlib import path
+from pathlib import Path
 
 def write(fname):
     with open(fname, 'w') as fp:
