@@ -263,10 +263,10 @@ FAILED test_output_capture.py::test_func - asse...
 
 ## Common Options
 
+* `-l` show locals
 * `-s` disable output capture
 * `-x` exit on first failure
 * `-k/m` only run matching tests
-* `-l` show locals
 * `--pdb` enter debugger on errors
 * `-rsxXw` `-ra` report skipped, xfailed, ...
 * defaults in `pytest.ini`
@@ -278,8 +278,8 @@ FAILED test_output_capture.py::test_func - asse...
 ### showlocals
 
 ```text
-$ py.test -ql
-F..FF                                      [100%]
+$ py.test -ql -l -k assertions
+F                                          [100%]
 ==================== FAILURES ====================
 ________________ test_assertions _________________
 
@@ -292,32 +292,9 @@ x          = 0
 y          = 0
 
 test_assertions.py:3: AssertionError
-___________________ test_wrong ___________________
-
-    def test_wrong():
->       assert 'Some test about spam' == 'Some blurb about ham'
-E       AssertionError: assert 'Some test about spam' == 'Some blurb about ham'
-E         - Some blurb about ham
-E         + Some test about spam
-
-
-test_failure_report.py:2: AssertionError
-___________________ test_func ____________________
-
-    def test_func():
->       assert func(5) < 5
-E       assert 47 < 5
-E        +  where 47 = func(5)
-
-
-test_output_capture.py:6: AssertionError
--------------- Captured stdout call --------------
-input was: 5
 ============ short test summary info =============
 FAILED test_assertions.py::test_assertions - as...
-FAILED test_failure_report.py::test_wrong - Ass...
-FAILED test_output_capture.py::test_func - asse...
-3 failed, 2 passed in 0.02s
+1 failed, 4 deselected in 0.01s
 ```
 
 ---
@@ -397,7 +374,7 @@ markers = mymark
 
 ## Skipping, xfail & marks
 
-### Output
+### Output skip
 
 ```text
 $ py.test -ra test_skip.py
@@ -412,6 +389,25 @@ test_skip.py .x.                           [100%]
 ============ short test summary info =============
 XFAIL test_skip.py::test_oops
 ========== 2 passed, 1 xfailed in 0.01s ==========
+```
+
+---
+
+## Skipping, xfail & marks
+
+### Output marks
+
+```text
+$ pytest -ra test_skip.py  -m mymark
+============== test session starts ===============
+platform linux -- Python 3.9.7, pytest-6.2.5, py-1.10.0, pluggy-1.0.0
+cachedir: $PWD/.tox/regen/.pytest_cache
+rootdir: /path/to/example, configfile: pytest.ini
+collected 3 items / 2 deselected / 1 selected
+
+test_skip.py .                             [100%]
+
+======== 1 passed, 2 deselected in 0.00s =========
 ```
 
 -----
@@ -512,4 +508,3 @@ def test_platform():
 ---
 
 ## Questions ?
-
