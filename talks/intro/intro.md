@@ -8,7 +8,6 @@ retouch and new content
 
 [Ronny Pfannschmidt](mailto:opensource@ronnypfannschmidt.de)
 
-
 ---
 
 ## where to get/contribute
@@ -130,8 +129,8 @@ FAILED test_failure_report.py::test_wrong - Ass...
 def test_assertions():
   x = y = 0
   assert x
-  assert x == 1
-  assert x != 2
+  assert x == 1 # we will never get here
+  assert x != 2 # after all assert raises a exception
   assert not x
   assert 3 < x < 5 and y < 5
   s = 'the quick fox ...'
@@ -266,7 +265,7 @@ FAILED test_output_capture.py::test_func - asse...
 
 * `-s` disable output capture
 * `-x` exit on first failure
-* `-k` only run matching tests
+* `-k/m` only run matching tests
 * `-l` show locals
 * `--pdb` enter debugger on errors
 * `-rsxXw` `-ra` report skipped, xfailed, ...
