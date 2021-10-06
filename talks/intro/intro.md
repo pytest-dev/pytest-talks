@@ -1,5 +1,4 @@
-Pytest Intro
-------------
+# Pytest Intro
 
 First version
 
@@ -12,42 +11,42 @@ retouch and new content
 
 ---
 
-where to get/contribute
-------------------------
+## where to get/contribute
 
 ![pytest logo](./pytest1.png)
 
-* http://pytest.org
-* http://github.com/pytest-dev/pytest
-
+* <http://pytest.org>
+* <http://github.com/pytest-dev/pytest>
 
 -----
 
-
 ## introduction
+
 ### basic features
 
-- no-boilerplate test
-- test discovery
-- plain assert
-- lovely exception formatting
-- output capture
-- runs unittest tests too
+* no-boilerplate test
+* test discovery
+* plain assert
+* lovely exception formatting
+* output capture
+* runs unittest tests too
 
 ---
 
 ## introduction
-### really nice features
-- parametrisation
-- markers
-- pdb integration
-- xdist
-- plugins
 
+### really nice features
+
+* parametrisation
+* markers
+* pdb integration
+* xdist
+* plugins
 
 -----
 
 ## Simple Tests
+
 ### code
 
 ```python
@@ -67,8 +66,8 @@ class TestFloats:
 
 ---
 
-
 ## Simple Tests
+
 ### output
 
 ```text
@@ -87,7 +86,9 @@ simple_tests.py ...                        [100%]
 -----
 
 ## Detailed Failure Reports
+
 ### code
+
 ```python
 # content of test_failure_report.py
 def test_wrong():
@@ -96,11 +97,11 @@ def test_wrong():
 
 ---
 
-
 ## Detailed Failure Reports
+
 ### output
 
-```
+```text
 $ pytest -q test_failure_report.py 
 F                                          [100%]
 ==================== FAILURES ====================
@@ -120,8 +121,8 @@ FAILED test_failure_report.py::test_wrong - Ass...
 
 -----
 
-
 ## Assertions
+
 ## code
 
 ```python
@@ -137,14 +138,13 @@ def test_assertions():
   assert 'fox' in s
 ```
 
-
 ---
 
-
 ## Assertions
+
 ### output
 
-```
+```text
 $ pytest test_assertions.py 
 ============== test session starts ===============
 platform linux -- Python 3.9.7, pytest-6.2.5, py-1.10.0, pluggy-1.0.0
@@ -169,7 +169,9 @@ FAILED test_assertions.py::test_assertions - as...
 ```
 
 -----
+
 ## Expected Exceptions
+
 ### code
 
 ```python
@@ -190,13 +192,14 @@ def test_exc_args():
     assert exc.type is Exception
     assert exc.tb
 ```
+
 ---
+
 ## Expected Exceptions
+
 ### output
 
-
-
-```
+```text
 $ pytest test_expected_exceptions.py 
 ============== test session starts ===============
 platform linux -- Python 3.9.7, pytest-6.2.5, py-1.10.0, pluggy-1.0.0
@@ -209,10 +212,10 @@ test_expected_exceptions.py ..             [100%]
 =============== 2 passed in 0.00s ================
 ```
 
-
 -----
 
 ## Output Capture
+
 ### code
 
 ```python
@@ -227,11 +230,11 @@ def test_func():
 
 ---
 
-
 ## Output Capture
+
 ### output
 
-```
+```text
 $ py.test test_output_capture.py
 ============== test session starts ===============
 platform linux -- Python 3.9.7, pytest-6.2.5, py-1.10.0, pluggy-1.0.0
@@ -261,20 +264,21 @@ FAILED test_output_capture.py::test_func - asse...
 
 ## Common Options
 
-- `-s` disable output capture
-- `-x` exit on first failure
-- `-k` only run matching tests
-- `-l` show locals
-- `--pdb` enter debugger on errors
-- `-rsxXw` `-ra` report skipped, xfailed, ...
-- defaults in `pytest.ini`
+* `-s` disable output capture
+* `-x` exit on first failure
+* `-k` only run matching tests
+* `-l` show locals
+* `--pdb` enter debugger on errors
+* `-rsxXw` `-ra` report skipped, xfailed, ...
+* defaults in `pytest.ini`
 
 ---
 
 ## Common Options
+
 ### showlocals
 
-```python
+```text
 $ py.test -ql
 F..FF                                      [100%]
 ==================== FAILURES ====================
@@ -320,7 +324,9 @@ FAILED test_output_capture.py::test_func - asse...
 ---
 
 ## Common Options
+
 ### Selecting Tests
+
 #### code
 
 ```python
@@ -334,13 +340,13 @@ def test_bar():
 
 ---
 
-
 ## Common Options
+
 ### Selecting Tests
+
 #### output
 
-
-```
+```text
 $ py.test test_select.py -v -k foo
 ============== test session starts ===============
 platform linux -- Python 3.9.7, pytest-6.2.5, py-1.10.0, pluggy-1.0.0 -- $PWD/.tox/regen/bin/python
@@ -355,7 +361,9 @@ test_select.py::test_foo PASSED            [100%]
 
 ---
 
-## Skipping, xfail & marks
+### Skipping, xfail & marks
+
+### code
 
 ```python
 # content of test_skip.py
@@ -376,10 +384,11 @@ def test_foo():
 ```
 
 Note:
-- Select tests by mark: `-m 'not mymark'`
- - Marks also useful in plugins
 
-```
+* Select tests by mark: `-m 'not mymark'`
+* Marks also useful in plugins
+
+```ini
 # content of pytest.ini
 [pytest]
 markers = mymark    
@@ -387,10 +396,11 @@ markers = mymark
 
 ---
 
+## Skipping, xfail & marks
 
-## Output
+### Output
 
-```
+```text
 $ py.test -ra test_skip.py
 ============== test session starts ===============
 platform linux -- Python 3.9.7, pytest-6.2.5, py-1.10.0, pluggy-1.0.0
@@ -408,17 +418,18 @@ XFAIL test_skip.py::test_oops
 -----
 
 ## Fixtures
+
 ### about
 
-
-- Dependency injection
-- Isolation
-- (`.setUp()` `.tearDown()`)
-
+* Dependency injection
+* Isolation
+* (`.setUp()` `.tearDown()`)
+* parameterization
 
 ---
 
 ## Fixtures
+
 ### basic usage
 
 ```python
@@ -435,6 +446,7 @@ def test_value(somevalue):
 ---
 
 ## Fixtures
+
 ### finalization
 
 ```python
@@ -453,6 +465,7 @@ def test_something_with_db(db):
 -----
 
 ## Builtin fixture
+
 ### tmp_path
 
 ```python
@@ -470,8 +483,8 @@ def test_output(tmp_path: Path):
 
 ---
 
-
 ## Builtin fixture
+
 ### monkeypatch
 
 ```python
@@ -486,23 +499,18 @@ def test_platform():
     assert sys.platform == 'posix'
 ```
 
-
-
 -----
 
-More
-----
+## More
 
-- parametrization
-- fixtures
-  - parametrization
-  - scopes
-- local plugins: **conftest.py**
-  - command line options
-  - extra config setup
+* fixtures
+  * parametrization
+  * scopes
+* local plugins: **conftest.py**
+  * command line options
+  * extra config setup
 
 ---
 
+## Questions ?
 
-Questions?
-----------
