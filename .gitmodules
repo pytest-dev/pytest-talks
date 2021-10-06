@@ -1,6 +1,6 @@
 [submodule "assets/reveal.js"]
 	path = assets/reveal.js
-	url = git@github.com:hakimel/reveal.js.git
+	url = https://github.com/hakimel/reveal.js.git
 [submodule "pytest-for-unittest-users"]
 	path = pytest-for-unittest-users
-	url = git@github.com:nicoddemus/pytest-for-unittest-users.git
+	url = https://github.com/nicoddemus/pytest-for-unittest-users.git

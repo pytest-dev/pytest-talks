@@ -1,0 +1,6 @@
+{
+  "MD013": false,
+  "no-duplicate-header":false,
+  "MD003": { "style": "atx"},
+  "hr-style": false 
+}
